@@ -207,6 +207,11 @@ python cli.py --api-key YOUR_KEY --save-api-key --search-type video --video-ids 
 - Persist proxy settings with --save-proxy
 - Clear saved proxy with --clear-proxy
 
+## UI
+
+<img width="2556" height="1940" alt="LISTCREATORTAB" src="https://github.com/user-attachments/assets/94bd79fd-c2aa-457a-b8e9-6428129c1a63" />
+<img width="2556" height="1940" alt="DOWNLOADERTAB" src="https://github.com/user-attachments/assets/ddc686f5-9d85-459d-8927-e498fe29e87a" />
+
 ## CLI Usage
 
 ### Main Search Command
@@ -279,9 +284,9 @@ python cli.py --search-type video --video-ids abc123 --keyword test
   - Validate key with --validate-api-key.
   - Check YouTube Data API quota status in Google Cloud.
 
+## License
+This project is licensed under the MIT License + Commons Clause v1.0.
 
+You are free to use, modify, and distribute this software for free, but you may not sell it or offer it as a paid/SaaS service.
 
-
-
-
-
+See the LICENSE file for the full text
