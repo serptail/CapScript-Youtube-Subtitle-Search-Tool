@@ -4,6 +4,8 @@
   </a>
 </p>
 
+---
+
 [![Release](https://img.shields.io/badge/Release-v2.0-red.svg)](https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool/releases)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
