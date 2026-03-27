@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>CapScript Pro</title>
+      <meta name="description" content="CapScript Pro is a desktop tool for searching YouTube captions, reviewing transcripts, clipping moments, and rendering compilations.">
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <script src="https://cdn.tailwindcss.com"></script>
+      <script>
+         tailwind.config = {
+           darkMode: 'class',
+           theme: {
+             extend: {
+               colors: {
+                 background: '#111111',
+                 surface: '#181818',
+                 card: '#1e1e1e',
+                 border: '#2a2a2a',
+                 primary: '#f0f0f0',
+                 muted: '#888888',
+                 accent: {
+                   DEFAULT: '#FF0033',
+                   hover: '#e6002e',
+                   subtle: '#331015'
+                 }
+               },
+               fontFamily: {
+                 sans: ['Inter', 'sans-serif'],
+               }
+             }
+           }
+         }
+      </script>
+      <link rel="stylesheet" href="styles.css">
+      <link rel="stylesheet" href="animations.css">
+   </head>
+   <body class="bg-background text-primary font-sans antialiased min-h-screen flex flex-col selection:bg-accent/30">
+      <header class="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+         <div class="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+               <a href="#" class="brand">
+               <span class="brand-mark">
+               <img src="assets/capscript-transparent-noborder-png.png" alt="CapScript logo" class="brand-logo">
+               </span>
+               </a>
+               <a href="#" class="font-bold text-2xl tracking-tight brand-title">
+               Cap<span class="accent-s">Script</span>
+               </a>      
+            </div>
+            <nav class="flex items-center gap-6 text-sm font-medium text-muted">
+               <a href="#features" class="hover:text-primary transition-colors hidden sm:block">Features</a>
+               <a href="#cpp-perks" class="hover:text-primary transition-colors hidden sm:block">Highlights</a>
+               <a href="#downloads" class="hover:text-primary transition-colors hidden sm:block">Downloads</a>
+               <a href="#downloads" class="bg-accent text-white px-4 py-2 rounded-md hover:bg-accent-hover transition-colors font-semibold">Get Started</a>
+            </nav>
+         </div>
+      </header>
+      <main class="flex-1 overflow-hidden">
+         <section class="container mx-auto px-4 md:px-8 py-24 md:py-32 flex flex-col lg:flex-row items-center gap-16">
+            <div class="flex-1 w-full order-2 lg:order-1 perspective-1000">
+               <div class="relative rounded-xl border border-border bg-black shadow-2xl overflow-hidden shadow-accent/5">
+                  <div class="h-8 bg-surface border-b border-border flex items-center px-4 gap-2">
+                     
+                     <div class="w-3 h-3 rounded-full bg-border flex items-center justify-center">
+                        <svg width="6" height="6" viewBox="0 0 6 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                           <path d="M1 1l4 4M5 1L1 5" stroke="#888" stroke-width="1.2" stroke-linecap="round"/>
+                        </svg>
+                     </div>
+                     
+                     <div class="w-3 h-3 rounded-full bg-border flex items-center justify-center">
+                        <svg width="6" height="6" viewBox="0 0 6 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                           <path d="M1 3h4" stroke="#888" stroke-width="1.2" stroke-linecap="round"/>
+                        </svg>
+                     </div>
+                     
+                     <div class="w-3 h-3 rounded-full bg-border flex items-center justify-center">
+                        <svg width="6" height="6" viewBox="0 0 6 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                           <rect x="1" y="1" width="4" height="4" stroke="#888" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                     </div>
+                  </div>
+                  <div class="aspect-[16/10] bg-background flex items-center justify-center relative group">
+                     <img src="assets/capscript-png-noborder.png" alt="CapScript Pro UI" class="w-full h-full object-cover">
+                  </div>
+               </div>
+            </div>
+            <div class="flex-1 order-1 lg:order-2 space-y-6">
+               <h1 class="text-5xl md:text-6xl font-bold tracking-tight leading-tight site-hero-title">
+                  Cap<span class="accent-s">Script</span> Pro
+               </h1>
+               <p class="text-xl text-muted leading-relaxed max-w-xl">
+                  An easy YouTube transcript search tool for Windows. Search YouTube subtitles, jump to the right second, and download timestamps into usable clips effortlessly.
+               </p>
+               <div class="pt-6">
+                  <a id="hero-download-btn" href="https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool/releases/latest" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-accent bg-transparent hover:bg-accent/10 px-8 py-3 text-primary h-12 w-fit group">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-accent group-hover:scale-110 transition-transform">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" x2="12" y1="15" y2="3"/>
+                     </svg>
+                     Download For Windows
+                  </a>
+                  <p class="text-xs text-muted mt-6 max-w-md">
+                     Latest release. This software utilizes third-party tools, yt-dlp and ffmpeg. CapScript Pro does not host or distribute these tools but will provide optional functionality to install and manage them from their official sources.
+                  </p>
+                  <a href="#downloads" class="text-sm text-accent hover:underline mt-2 inline-block">see all available downloads & checksums here</a>
+               </div>
+            </div>
+         </section>
+         <style>
+            .feature-img {
+            display: block;
+            width: 100%;
+            border-radius: 0;
+            border: none;
+            outline: none;
+            box-shadow:
+            0  2px  6px  rgba(0,0,0,0.50),
+            0  8px  24px rgba(0,0,0,0.45),
+            0 24px  56px rgba(0,0,0,0.40);
+            object-fit: cover;
+            }
+            .feat-badge {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            padding: 4px 14px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            }
+            .feat-badge--accent {
+            border: 1px solid rgba(230, 0, 46, 0.35);
+            background: rgba(230, 0, 46, 0.1);
+            color: #FF0033;
+            }
+            .feat-badge--neutral {
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.65);
+            }
+            .feat-stripe {
+            position: absolute;
+            left: 50%;
+            width: 200vw;
+            height: 400px;
+            background: #e6002e;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: -20;
+            }
+         </style>
+         <section id="features" class="relative overflow-hidden w-full border-t border-border">
+            <div class="feat-stripe" style="top:28%;opacity:0.05;transform:translateX(-50%) rotate(12deg);"></div>
+            <div class="feat-stripe" style="top:63%;opacity:0.04;transform:translateX(-50%) rotate(-12deg);"></div>
+            <div class="container mx-auto px-4 md:px-8 py-24 md:py-32 relative" style="z-index:10;">
+               <div class="text-center mb-24 cursor-default">
+                  <h2 class="text-3xl md:text-5xl tracking-tight mb-6" style="font-family:'Gilroy ExtraBold',sans-serif;">
+                     Powerful Tools in <span style="color:#FF0033;">One Workflow</span>
+                  </h2>
+                  <p class="text-xl text-muted max-w-2xl mx-auto">
+                     Everything you need to find the right moments, review transcripts, and clip videos effortlessly.
+                  </p>
+               </div>
+               <div class="flex flex-col max-w-6xl mx-auto" style="gap:96px;">
+                  
+                  <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+                     <div class="flex-1 w-full">
+                        <img src="assets/SEARCHTAB.png" alt="Search Transcripts" class="feature-img">
+                     </div>
+                     <div class="flex-1" style="display:flex;flex-direction:column;gap:16px;">
+                        <span class="feat-badge feat-badge--accent">Search</span>
+                        <h3 class="text-3xl" style="font-family:'Gilroy ExtraBold',sans-serif;margin:0;">Find exactly what they said</h3>
+                        <p class="text-muted leading-relaxed text-lg" style="margin:0;">
+                           Search transcripts across entire channels or specific videos to pinpoint the exact moment a topic was mentioned. Save hours of scrubbing through footage by jumping directly to the relevant word.
+                        </p>
+                     </div>
+                  </div>
+                  
+                  <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+                     <div class="flex-1 order-2 lg:order-1" style="display:flex;flex-direction:column;gap:16px;">
+                        <span class="feat-badge feat-badge--neutral">Viewer</span>
+                        <h3 class="text-3xl" style="font-family:'Gilroy ExtraBold',sans-serif;margin:0;">Review and contextualize</h3>
+                        <p class="text-muted leading-relaxed text-lg" style="margin:0;">
+                           Play back your findings instantly. The Viewer tab synchronizes the transcript with the video, letting you skim the text while effortlessly checking the visual and auditory context.
+                        </p>
+                     </div>
+                     <div class="flex-1 w-full order-1 lg:order-2">
+                        <img src="assets/VIEWERTAB.png" alt="Viewer" class="feature-img">
+                     </div>
+                  </div>
+                  
+                  <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+                     <div class="flex-1 w-full">
+                        <img src="assets/DOWNLOADERTAB.png" alt="Clip Downloader" class="feature-img">
+                     </div>
+                     <div class="flex-1" style="display:flex;flex-direction:column;gap:16px;">
+                        <span class="feat-badge feat-badge--accent">Clip Downloader</span>
+                        <h3 class="text-3xl" style="font-family:'Gilroy ExtraBold',sans-serif;margin:0;">Extract highlights automatically</h3>
+                        <p class="text-muted leading-relaxed text-lg" style="margin:0;">
+                           Select timestamps from your search results and download short snippets in high quality. Keep your drive clean instead of downloading massive hours-long original streams.
+                        </p>
+                     </div>
+                  </div>
+                  
+                  <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+                     <div class="flex-1 order-2 lg:order-1" style="display:flex;flex-direction:column;gap:16px;">
+                        <span class="feat-badge feat-badge--neutral">Renderer</span>
+                        <h3 class="text-3xl" style="font-family:'Gilroy ExtraBold',sans-serif;margin:0;">Combine clips efficiently</h3>
+                        <p class="text-muted leading-relaxed text-lg" style="margin:0;">
+                           Merge your downloaded clips into a seamless master track. The built-in Renderer automates FFMPEG processing, giving you a final compilation ready to share or drop into any editor.
+                        </p>
+                     </div>
+                     <div class="flex-1 w-full order-1 lg:order-2">
+                        <img src="assets/RENDERTAB.png" alt="Renderer" class="feature-img">
+                     </div>
+                  </div>
+                  
+                  <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+                     <div class="flex-1 w-full">
+                        <img src="assets/LISTCREATORTAB.png" alt="List Creator" class="feature-img">
+                     </div>
+                     <div class="flex-1" style="display:flex;flex-direction:column;gap:16px;">
+                        <span class="feat-badge feat-badge--accent">List Creator</span>
+                        <h3 class="text-3xl" style="font-family:'Gilroy ExtraBold',sans-serif;margin:0;">Bulk organize your data</h3>
+                        <p class="text-muted leading-relaxed text-lg" style="margin:0;">
+                           Fetch multiple video IDs by channel and date range efficiently. Build custom lists to narrow down search scopes, helping you maintain organized datasets for all your content projects.
+                        </p>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+         
+         <section id="cpp-perks" class="relative w-full py-24 md:py-32 border-t border-border overflow-hidden">
+            
+            <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+               <div style="
+                  position: absolute;
+                  top: 50%;
+                  left: 50%;
+                  bottom: 50%;
+                  transform: translate(-50%, -50%);
+                  width: 80%;
+                  height: 70%;
+                  background: radial-gradient(
+                  ellipse at center,
+                  rgba(255, 0, 0, 0.25) 0%,
+                  rgba(255, 0, 0, 0.12) 45%,
+                  transparent 70%
+                  );          border-radius: 80%;
+                  filter: blur(40px);
+                  "></div>
+            </div>
+            <div class="container mx-auto px-4 md:px-8 relative z-10">
+               <div class="text-center mb-16 cursor-default">
+                  <h2 class="text-3xl md:text-5xl tracking-tight mb-6"
+                     style="font-family: 'Gilroy ExtraBold', sans-serif;">
+                     Under the <span class="text-accent">Hood</span>
+                  </h2>
+                  <p class="text-xl text-muted max-w-2xl mx-auto backdrop-blur-sm rounded-lg">Rebuilt dynamically for maximum performance and a minimal footprint.</p>
+               </div>
+               <div class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-3 gap-3 max-w-5xl mx-auto">
+                  
+                  <div class="md:col-span-2 md:row-span-2 glass-tile p-8 flex flex-col items-center justify-center text-center group text-primary relative overflow-hidden">
+                     <div class="w-16 h-16 flex items-center justify-center mb-6 text-accent group-hover:scale-110 transition-transform duration-300">
+                        <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" fill="#000000">
+                           <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                           <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                           <g id="SVGRepo_iconCarrier">
+                              <path fill="#ffffff" d="M270.877 444.542C576.857 496.618 318.44 29.007 23.097 25.68 447.57-7.506 696.864 640.745 270.878 444.54z"></path>
+                           </g>
+                        </svg>
+                     </div>
+                     <h3 class="text-2xl" style="font-family: 'Gilroy ExtraBold', sans-serif;">Blazing Fast</h3>
+                     <p class="text-base text-muted/90 leading-relaxed mt-3 max-w-[300px]">Native C++ UI ensures instant responsiveness and smooth scrolling through thousands of transcript lines without lag.</p>
+                  </div>
+                  
+                  <div class="md:col-span-2 md:row-span-1 glass-tile p-6 flex flex-col items-center justify-center text-center group text-primary relative overflow-hidden">
+                     <div class="w-14 h-14 flex items-center justify-center mb-4 text-accent group-hover:scale-110 transition-transform duration-300">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                           <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                           <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                           <g id="SVGRepo_iconCarrier">
+                              <path opacity="0.1" d="M4.44905 17.0091C-0.246262 7.83768 7.34063 0.686186 19.5547 3.61251C20.4161 3.81888 21.0082 4.6099 20.9652 5.49458C20.5863 13.288 17.0342 17.7048 6.13264 17.9858C5.43034 18.0039 4.7692 17.6344 4.44905 17.0091Z" fill="#ffffff"></path>
+                              <path d="M4.44905 17.0091C-0.246262 7.83768 7.34063 0.686186 19.5547 3.61251C20.4161 3.81888 21.0082 4.6099 20.9652 5.49458C20.5863 13.288 17.0342 17.7048 6.13264 17.9858C5.43034 18.0039 4.7692 17.6344 4.44905 17.0091Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                              <path d="M3.99987 21C5.49993 15.5 5.99988 12.5 11.9998 9.99997" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                           </g>
+                        </svg>
+                     </div>
+                     <h3 class="text-2xl" style="font-family: 'Gilroy ExtraBold', sans-serif;">Native & Lightweight</h3>
+                     <p class="text-sm text-muted/90 leading-relaxed mt-2">Replaced the hefty Python UI dependency with native Qt, drastically reducing distribution size and memory usage.</p>
+                  </div>
+                  
+                  <div class="md:col-span-1 md:row-span-1 glass-tile p-6 flex flex-col items-center justify-center text-center group text-primary relative overflow-hidden">
+                     <div class="w-12 h-12 flex items-center justify-center mb-4 text-accent group-hover:scale-110 transition-transform duration-300">
+                        <svg viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#ffffff">
+                           <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                           <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                           <g id="SVGRepo_iconCarrier">
+                              <title>python [#ffffff]</title>
+                              <desc>Created with Sketch.</desc>
+                              <defs> </defs>
+                              <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                 <g id="Dribbble-Light-Preview" transform="translate(-340.000000, -7599.000000)" fill="#ffffff">
+                                    <g id="icons" transform="translate(56.000000, 160.000000)">
+                                       <path d="M296.744,7457.45798 C296.262,7457.45798 295.872,7457.06594 295.872,7456.58142 C295.872,7456.0969 296.262,7455.70587 296.744,7455.70587 C297.226,7455.70587 297.616,7456.0969 297.616,7456.58142 C297.616,7457.06594 297.226,7457.45798 296.744,7457.45798 M294.072,7459 C299.15,7459 298.833,7456.78649 298.833,7456.78649 L298.827,7454.49357 L293.982,7454.49357 L293.982,7453.80499 L300.751,7453.80499 C300.751,7453.80499 304,7454.17591 304,7449.02614 C304,7443.87636 301.165,7444.0583 301.165,7444.0583 L299.472,7444.0583 L299.472,7446.44873 C299.472,7446.44873 299.563,7449.29855 296.682,7449.29855 L291.876,7449.29855 C291.876,7449.29855 289.176,7449.25533 289.176,7451.9222 L289.176,7456.33112 C289.176,7456.33112 288.766,7459 294.072,7459 M291.257,7440.54202 C291.739,7440.54202 292.128,7440.93406 292.128,7441.41858 C292.128,7441.9031 291.739,7442.29413 291.257,7442.29413 C290.775,7442.29413 290.385,7441.9031 290.385,7441.41858 C290.385,7440.93406 290.775,7440.54202 291.257,7440.54202 M293.928,7439 C288.851,7439 289.168,7441.21351 289.168,7441.21351 L289.174,7443.50643 L294.019,7443.50643 L294.019,7444.19501 L287.249,7444.19501 C287.249,7444.19501 284,7443.82409 284,7448.97386 C284,7454.12364 286.836,7453.9417 286.836,7453.9417 L288.528,7453.9417 L288.528,7451.55127 C288.528,7451.55127 288.437,7448.70145 291.319,7448.70145 L296.124,7448.70145 C296.124,7448.70145 298.824,7448.74467 298.824,7446.0778 L298.824,7441.66888 C298.824,7441.66888 299.234,7439 293.928,7439" id="python-[#ffffff]"> </path>
+                                    </g>
+                                 </g>
+                              </g>
+                           </g>
+                        </svg>
+                     </div>
+                     <h3 class="text-2xl" style="font-family: 'Gilroy ExtraBold', sans-serif;">Embedded Python</h3>
+                     <p class="text-[13px] text-muted/90 leading-relaxed mt-2">Keeps the reliable YouTube API & script fetching engine embedded inside, securely.</p>
+                  </div>
+                  
+                  <div class="md:col-span-1 md:row-span-1 glass-tile p-6 flex flex-col items-center justify-center text-center group text-primary relative overflow-hidden">
+                     <div class="w-16 h-16 flex items-center justify-center mb-4 text-accent group-hover:scale-110 transition-transform duration-300">
+                        <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="#ffffff" stroke="#ffffff" stroke-width="0.0002">
+                           <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                           <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                           <g id="SVGRepo_iconCarrier">
+                              <rect x="0" fill="none" width="20" height="20"></rect>
+                              <g>
+                                 <path d="M5.7 9c.4-2 2.2-3.5 4.3-3.5 1.5 0 2.7.7 3.5 1.8l1.7-2C14 3.9 12.1 3 10 3 6.5 3 3.6 5.6 3.1 9H1l3.5 4L8 9H5.7zm9.8-2L12 11h2.3c-.5 2-2.2 3.5-4.3 3.5-1.5 0-2.7-.7-3.5-1.8l-1.7 1.9C6 16.1 7.9 17 10 17c3.5 0 6.4-2.6 6.9-6H19l-3.5-4z"></path>
+                              </g>
+                           </g>
+                        </svg>
+                     </div>
+                     <h3 class="text-2xl" style="font-family: 'Gilroy ExtraBold', sans-serif;">Auto-Updates</h3>
+                     <p class="text-[13px] text-muted/90 leading-relaxed mt-2">Receives updates automatically, so it stays up and running.</p>
+                  </div>
+                  
+                  <div class="md:col-span-2 md:row-span-1 glass-tile p-6 flex flex-col items-center justify-center text-center group text-primary relative overflow-hidden">
+                     <div class="w-14 h-14 flex items-center justify-center mb-4 text-accent group-hover:scale-110 transition-transform duration-300">
+                        <svg version="1.1" id="web" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 64 64" enable-background="new 0 0 64 64" xml:space="preserve" fill="#ffffff">
+                           <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                           <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                           <g id="SVGRepo_iconCarrier">
+                              <path fill="#ffffff" d="M57.998,42.63l-1.17-0.596c-7.424-7.793-9.133-19.278-4.255-28.705l0.678-0.678 c0.39-0.391,0.39-1.024-0.002-1.414c-0.391-0.39-1.023-0.39-1.414,0.002l-0.593,0.592l-0.007-0.014 c-9.411,4.931-20.808,3.391-28.588-3.78l-0.788-1.547c-0.25-0.492-0.852-0.688-1.345-0.437c-0.492,0.251-0.688,0.853-0.437,1.345 l0.576,1.131l-0.036,0.005c1.508,10.548-3.778,20.802-13.173,25.723L6.3,34.44c-0.545,0.086-0.918,0.599-0.832,1.144 c0.078,0.492,0.503,0.844,0.987,0.844c0.052,0,0.104-0.004,0.157-0.013l1.016-0.161c0.062,0.013,0.122,0.029,0.183,0.042 l0.016,0.032c0.013-0.006,0.024-0.014,0.037-0.02c10.738,2.203,18.849,10.58,20.299,21.005l-0.089,0.563 c-0.087,0.545,0.285,1.058,0.831,1.144c0.053,0.009,0.105,0.013,0.157,0.013c0.483,0,0.909-0.352,0.986-0.844l0.211-1.334 c5.122-9.43,15.616-14.553,26.207-12.748l0.002-0.012l0.621,0.316c0.146,0.074,0.301,0.109,0.453,0.109 c0.364,0,0.716-0.199,0.892-0.546C58.686,43.482,58.49,42.88,57.998,42.63z M52.5,39.828l-3.605-1.837 c-3.267-5.245-4.474-11.465-3.397-17.585l3.478-3.478C46.632,24.653,47.92,33.061,52.5,39.828z M33.58,29.495l-2.303-4.521 c1.833,0.594,3.721,0.985,5.649,1.174L33.58,29.495z M38.442,27.461c0.196,1.992,0.605,3.942,1.233,5.833l-4.682-2.385 L38.442,27.461z M29.436,25.765l2.363,4.638L27.08,31.15C28.063,29.438,28.854,27.641,29.436,25.765z M32.112,32.377l-0.805,5.078 c-1.206-1.584-2.563-3.029-4.083-4.304L32.112,32.377z M34.087,32.69l4.34,2.211c-1.832,0.801-3.558,1.79-5.161,2.97L34.087,32.69z M42.334,34.648c-1.235-2.875-1.911-5.919-2.012-9.067l2.868-2.869c-0.362,4.719,0.511,9.414,2.535,13.665L42.334,34.648z M38.808,24.268c-3.076-0.097-6.054-0.742-8.869-1.921l-1.722-3.379c3.562,1.657,7.428,2.516,11.355,2.516 c0.703,0,1.409-0.041,2.115-0.096L38.808,24.268z M26.334,19.676l1.735,3.406c-0.662,3.033-1.87,5.88-3.597,8.48l-3.964,0.628 C23.513,28.58,25.513,24.282,26.334,19.676z M24.487,33.585c2.522,1.822,4.67,4.062,6.373,6.697l-0.573,3.622 c-2.418-4.052-5.829-7.364-9.914-9.668L24.487,33.585z M32.8,40.814c2.354-2.06,5.038-3.64,7.996-4.705l3.613,1.841 c-4.597,1.111-8.789,3.388-12.204,6.619L32.8,40.814z M39.602,16.69c2.682,0,5.378-0.401,7.996-1.214l-3.612,3.613 c-6.04,1.064-12.169-0.098-17.366-3.258l-1.816-3.565C29.248,15.182,34.398,16.69,39.602,16.69z M22.854,12.848l1.853,3.636 c-0.383,6.139-3.004,11.865-7.385,16.211l-4.975,0.787C18.764,28.539,22.635,20.975,22.854,12.848z M12.368,35.504l4.61-0.73 c5.64,2.424,10.168,6.801,12.791,12.402l-0.794,5.016C26.348,44.521,20.26,38.377,12.368,35.504z M31.015,52.088l0.635-4.008 c3.977-4.717,9.515-7.782,15.667-8.648l4.584,2.336C43.734,41.87,36.061,45.66,31.015,52.088z"></path>
+                           </g>
+                        </svg>
+                     </div>
+                     <h3 class="text-2xl" style="font-family: 'Gilroy ExtraBold', sans-serif;">Proxy & Rate Limiting</h3>
+                     <p class="text-sm text-muted/90 leading-relaxed mt-2">Built-in proxy and rate limiting support to handle large-scale operations and prevent API throttling.</p>
+                  </div>
+                  
+                  <div class="md:col-span-2 md:row-span-1 glass-tile p-6 flex flex-col items-center justify-center text-center group text-primary relative overflow-hidden">
+                     <div class="w-14 h-14 flex items-center justify-center mb-4 text-accent group-hover:scale-110 transition-transform duration-300">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                           <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                           <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                           <g id="SVGRepo_iconCarrier">
+                              <path fill-rule="evenodd" clip-rule="evenodd" d="M9.49614 7.13176C9.18664 6.9549 8.80639 6.95617 8.49807 7.13509C8.18976 7.31401 8 7.64353 8 8V16C8 16.3565 8.18976 16.686 8.49807 16.8649C8.80639 17.0438 9.18664 17.0451 9.49614 16.8682L16.4961 12.8682C16.8077 12.6902 17 12.3589 17 12C17 11.6411 16.8077 11.3098 16.4961 11.1318L9.49614 7.13176ZM13.9844 12L10 14.2768V9.72318L13.9844 12Z" fill="#ffffff"></path>
+                              <path fill-rule="evenodd" clip-rule="evenodd" d="M0 12C0 8.25027 0 6.3754 0.954915 5.06107C1.26331 4.6366 1.6366 4.26331 2.06107 3.95491C3.3754 3 5.25027 3 9 3H15C18.7497 3 20.6246 3 21.9389 3.95491C22.3634 4.26331 22.7367 4.6366 23.0451 5.06107C24 6.3754 24 8.25027 24 12C24 15.7497 24 17.6246 23.0451 18.9389C22.7367 19.3634 22.3634 19.7367 21.9389 20.0451C20.6246 21 18.7497 21 15 21H9C5.25027 21 3.3754 21 2.06107 20.0451C1.6366 19.7367 1.26331 19.3634 0.954915 18.9389C0 17.6246 0 15.7497 0 12ZM9 5H15C16.9194 5 18.1983 5.00275 19.1673 5.10773C20.0989 5.20866 20.504 5.38448 20.7634 5.57295C21.018 5.75799 21.242 5.98196 21.4271 6.23664C21.6155 6.49605 21.7913 6.90113 21.8923 7.83269C21.9973 8.80167 22 10.0806 22 12C22 13.9194 21.9973 15.1983 21.8923 16.1673C21.7913 17.0989 21.6155 17.504 21.4271 17.7634C21.242 18.018 21.018 18.242 20.7634 18.4271C20.504 18.6155 20.0989 18.7913 19.1673 18.8923C18.1983 18.9973 16.9194 19 15 19H9C7.08058 19 5.80167 18.9973 4.83269 18.8923C3.90113 18.7913 3.49605 18.6155 3.23664 18.4271C2.98196 18.242 2.75799 18.018 2.57295 17.7634C2.38448 17.504 2.20866 17.0989 2.10773 16.1673C2.00275 15.1983 2 13.9194 2 12C2 10.0806 2.00275 8.80167 2.10773 7.83269C2.20866 6.90113 2.38448 6.49605 2.57295 6.23664C2.75799 5.98196 2.98196 5.75799 3.23664 5.57295C3.49605 5.38448 3.90113 5.20866 4.83269 5.10773C5.80167 5.00275 7.08058 5 9 5Z" fill="#ffffff"></path>
+                           </g>
+                        </svg>
+                     </div>
+                     <h3 class="text-2xl" style="font-family: 'Gilroy ExtraBold', sans-serif;">Video/Channel Modes</h3>
+                     <p class="text-sm text-muted/90 leading-relaxed mt-2">Flexibly search and process channel URLs, video URLs, video IDs, and multiple videos in bulk operations.</p>
+                  </div>
+               </div>
+            </div>
+         </section>
+         
+         <section id="faq" class="bg-background w-full py-24 md:py-36 border-t border-border">
+            <div class="container mx-auto px-4 md:px-8">
+               
+               <div class="flex flex-col lg:flex-row gap-16 lg:gap-24 items-start">
+                  
+                  <div class="lg:w-72 lg:sticky lg:top-32 shrink-0 faq-label-panel">
+                     <h2 class="text-4xl md:text-5xl font-bold tracking-tight leading-[1.1] text-primary"
+                        style="font-family: 'Gilroy ExtraBold', sans-serif;">
+                        Frequently<br>Asked<br><span class="text-accent">Questions</span>
+                     </h2>
+                     <p class="mt-6 text-sm text-muted leading-relaxed max-w-[220px]">
+                        Everything you need to know to get started with CapScript Pro.
+                     </p>
+                     <a href="https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool/blob/main/README.md" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-8 text-sm text-accent hover:opacity-70 transition-opacity group">
+                        <span>Still have questions?</span>
+                        <svg class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                     </a>
+                  </div>
+                  
+                  <div class="flex-1 divide-y divide-border/40">
+                     
+                     <div class="faq-item py-6 group cursor-pointer" onclick="toggleFaq(this)">
+                        <div class="flex items-center justify-between gap-4">
+                           <span class="text-base font-medium text-primary group-hover:text-accent transition-colors duration-200">
+                           Is CapScript Pro completely free?
+                           </span>
+                           <span class="faq-icon shrink-0 w-5 h-5 rounded-full border border-border/60 flex items-center justify-center transition-all duration-300 group-hover:border-accent/60">
+                              <svg class="w-2.5 h-2.5 text-muted transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                              </svg>
+                           </span>
+                        </div>
+                        <div class="faq-body overflow-hidden max-h-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+                           <p class="pt-4 text-sm text-muted leading-relaxed max-w-xl opacity-0 translate-y-1 transition-all duration-500 delay-75 faq-text">
+                              Yes, it's open source and free to use. There are no hidden fees or subscriptions. If you find it useful, you can optionally support the project by buying a coffee.
+                           </p>
+                        </div>
+                     </div>
+                     
+                     <div class="faq-item py-6 group cursor-pointer" onclick="toggleFaq(this)">
+                        <div class="flex items-center justify-between gap-4">
+                           <span class="text-base font-medium text-primary group-hover:text-accent transition-colors duration-200">
+                           Does it require yt-dlp or ffmpeg?
+                           </span>
+                           <span class="faq-icon shrink-0 w-5 h-5 rounded-full border border-border/60 flex items-center justify-center transition-all duration-300 group-hover:border-accent/60">
+                              <svg class="w-2.5 h-2.5 text-muted transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                              </svg>
+                           </span>
+                        </div>
+                        <div class="faq-body overflow-hidden max-h-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+                           <p class="pt-4 text-sm text-muted leading-relaxed max-w-xl opacity-0 translate-y-1 transition-all duration-500 delay-75 faq-text">
+                           Yes and No—CapScript uses these tools behind the scenes, but it works without them for basic features like search. Some functionality, such as clip downloading, depends on them. If they’re already installed, it will use them automatically; otherwise, it can download them for you if needed.                           </p>
+                        </div>
+                     </div>
+                     
+                     <div class="faq-item py-6 group cursor-pointer" onclick="toggleFaq(this)">
+                        <div class="flex items-center justify-between gap-4">
+                           <span class="text-base font-medium text-primary group-hover:text-accent transition-colors duration-200">
+                           Will my computer run this optimally?
+                           </span>
+                           <span class="faq-icon shrink-0 w-5 h-5 rounded-full border border-border/60 flex items-center justify-center transition-all duration-300 group-hover:border-accent/60">
+                              <svg class="w-2.5 h-2.5 text-muted transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                              </svg>
+                           </span>
+                        </div>
+                        <div class="faq-body overflow-hidden max-h-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+                           <p class="pt-4 text-sm text-muted leading-relaxed max-w-xl opacity-0 translate-y-1 transition-all duration-500 delay-75 faq-text">
+                              Absolutely. The C++ Qt Edition uses very little memory and is tailored to run incredibly fast on practically any windows machine.
+                           </p>
+                        </div>
+                     </div>
+                     
+                     <div class="faq-item py-6 group cursor-pointer" onclick="toggleFaq(this)">
+                        <div class="flex items-center justify-between gap-4">
+                           <span class="text-base font-medium text-primary group-hover:text-accent transition-colors duration-200">
+                           Can I search subtitles for any YouTube video?
+                           </span>
+                           <span class="faq-icon shrink-0 w-5 h-5 rounded-full border border-border/60 flex items-center justify-center transition-all duration-300 group-hover:border-accent/60">
+                              <svg class="w-2.5 h-2.5 text-muted transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                              </svg>
+                           </span>
+                        </div>
+                        <div class="faq-body overflow-hidden max-h-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+                           <p class="pt-4 text-sm text-muted leading-relaxed max-w-xl opacity-0 translate-y-1 transition-all duration-500 delay-75 faq-text">
+                              You can search any public video that provides closed captions, either manually uploaded or auto-generated by YouTube. Unlisted, private, or caption-less videos cannot be searched.
+                           </p>
+                        </div>
+                     </div>
+                     
+                     <div class="faq-item py-6 group cursor-pointer" onclick="toggleFaq(this)">
+                        <div class="flex items-center justify-between gap-4">
+                           <span class="text-base font-medium text-primary group-hover:text-accent transition-colors duration-200">
+                           Does it download the entire video for one clip?
+                           </span>
+                           <span class="faq-icon shrink-0 w-5 h-5 rounded-full border border-border/60 flex items-center justify-center transition-all duration-300 group-hover:border-accent/60">
+                              <svg class="w-2.5 h-2.5 text-muted transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                              </svg>
+                           </span>
+                        </div>
+                        <div class="faq-body overflow-hidden max-h-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+                           <p class="pt-4 text-sm text-muted leading-relaxed max-w-xl opacity-0 translate-y-1 transition-all duration-500 delay-75 faq-text">
+                              No! It utilizes an intelligent method combined with yt-dlp to download and extract just the tiny specific timeframe you requested—saving massive amounts of local disk space and internet bandwidth.
+                           </p>
+                        </div>
+                     </div>
+                     
+                     <div class="faq-item py-6 group cursor-pointer" onclick="toggleFaq(this)">
+                        <div class="flex items-center justify-between gap-4">
+                           <span class="text-base font-medium text-primary group-hover:text-accent transition-colors duration-200">
+                           Will CapScript soon come to Mac or Linux?
+                           </span>
+                           <span class="faq-icon shrink-0 w-5 h-5 rounded-full border border-border/60 flex items-center justify-center transition-all duration-300 group-hover:border-accent/60">
+                              <svg class="w-2.5 h-2.5 text-muted transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                              </svg>
+                           </span>
+                        </div>
+                        <div class="faq-body overflow-hidden max-h-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+                           <p class="pt-4 text-sm text-muted leading-relaxed max-w-xl opacity-0 translate-y-1 transition-all duration-500 delay-75 faq-text">
+                           Not right now. I do plan to support them, but getting it working there has been pretty difficult so far (Linux especially), so I don’t have a timeline yet.                           </p>
+                        </div>
+                     </div>
+                     
+                     <div class="faq-item py-6 group cursor-pointer" onclick="toggleFaq(this)">
+                        <div class="flex items-center justify-between gap-4">
+                           <span class="text-base font-medium text-primary group-hover:text-accent transition-colors duration-200">
+                           How frequently is the software updated?
+                           </span>
+                           <span class="faq-icon shrink-0 w-5 h-5 rounded-full border border-border/60 flex items-center justify-center transition-all duration-300 group-hover:border-accent/60">
+                              <svg class="w-2.5 h-2.5 text-muted transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                              </svg>
+                           </span>
+                        </div>
+                        <div class="faq-body overflow-hidden max-h-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+                           <p class="pt-4 text-sm text-muted leading-relaxed max-w-xl opacity-0 translate-y-1 transition-all duration-500 delay-75 faq-text">
+                              I try to provide fast regular updates that adapt to YouTube's undocumented API changes to keep the app operational, if the app breaks, please be patient.
+                           </p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+         <script>
+            function toggleFaq(item) {
+              const isOpen = item.classList.contains('faq-open');
+              // Close all
+              document.querySelectorAll('.faq-item.faq-open').forEach(el => {
+                el.classList.remove('faq-open');
+                const body = el.querySelector('.faq-body');
+                const text = el.querySelector('.faq-text');
+                const icon = el.querySelector('.faq-icon svg');
+                body.style.maxHeight = '0px';
+                text.style.opacity = '0';
+                text.style.transform = 'translateY(4px)';
+                icon.style.transform = 'rotate(0deg)';
+              });
+              // Open clicked if it was closed
+              if (!isOpen) {
+                item.classList.add('faq-open');
+                const body = item.querySelector('.faq-body');
+                const text = item.querySelector('.faq-text');
+                const icon = item.querySelector('.faq-icon svg');
+                body.style.maxHeight = body.scrollHeight + 60 + 'px';
+                // slight delay so height animates first
+                requestAnimationFrame(() => {
+                  text.style.opacity = '1';
+                  text.style.transform = 'translateY(0)';
+                });
+                icon.style.transform = 'rotate(180deg)';
+              }
+            }
+         </script>
+         <section id="downloads" class="bg-[#141414] py-24 border-t border-border">
+            <div class="container mx-auto px-4 md:px-8">
+               <div class="text-center mb-16">
+                  <h2 class="text-2xl font-bold flex items-center justify-center gap-2">
+                     All available downloads
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-muted animate-bounce">
+                        <path d="M12 5v14"/>
+                        <path d="m19 12-7 7-7-7"/>
+                     </svg>
+                  </h2>
+               </div>
+               <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+                  <div class="rounded-xl border border-border bg-background p-8 flex flex-col gap-6 group hover:border-accent/30 transition-colors">
+                     <div class="flex items-start gap-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-14 h-14 text-primary shrink-0">
+                           <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/>
+                        </svg>
+                        <div class="flex flex-col gap-1 w-full overflow-hidden">
+                           <div class="text-[13px] font-bold">Operating System: <span class="font-normal text-muted">windows</span></div>
+                           <div class="text-[13px] font-bold">File Name: <span class="font-normal text-muted" id="win-filename">CapScriptPro.exe</span></div>
+                           <div class="text-[13px] font-bold">Checksum Algorithm: <span class="font-normal text-muted">SHA-256</span></div>
+                           <div class="mt-4 break-all">
+                              <div class="text-xs text-muted mb-1">Checksum:</div>
+                              <div class="checksum-copybox">
+                                 <code class="text-[11px] text-muted font-mono select-all w-full leading-relaxed" id="win-checksum">Loading checksum...</code>
+                                 <button onclick="copyChecksum()" class="p-1.5 hover:text-primary text-muted transition-colors rounded hover:bg-surface" title="Copy to clipboard">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                                       <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                                       <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                                    </svg>
+                                 </button>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                     <a id="win-download-btn" href="https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool/releases/latest" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center rounded-md border border-accent/70 text-accent hover:bg-accent/10 transition-colors py-2.5 text-sm font-semibold mt-auto group-hover:border-accent">
+                     Download For Windows
+                     </a>
+                  </div>
+                  <div class="rounded-xl border border-border bg-background p-8 flex flex-col gap-6 group hover:border-primary/20 transition-colors">
+                     <div class="flex items-start gap-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-14 h-14 text-primary shrink-0">
+                           <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                        </svg>
+                        <div class="flex flex-col gap-1 w-full overflow-hidden">
+                           <div class="text-[13px] font-bold">CapScript CLI</div>
+                           <p class="text-[13px] text-muted mt-2 leading-relaxed">
+                              Prefer terminal workflows? Use the CLI mode to run transcript searches in scripts, CI jobs, and automation pipelines.
+                           </p>
+                           <div class="text-xs text-muted mt-4">Read usage flags and examples in the README CLI section.</div>
+                        </div>
+                     </div>
+                     <a href="https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool/blob/main/README.md#cli" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center rounded-md border border-border text-primary hover:bg-surface transition-colors py-2.5 text-sm font-semibold mt-auto group-hover:border-primary/50">
+                     Open CLI Guide
+                     </a>
+                  </div>
+               </div>
+            </div>
+         </section>
+      </main>
+      
+      <div id="supportButton" class="fixed z-50 perspective-1000" style="bottom: 24px; right: 24px;">
+         <div id="supportPopover" class="absolute bottom-full right-0 mb-4 w-64 bg-surface/90 backdrop-blur-xl border border-border rounded-2xl shadow-2xl p-5 opacity-0 translate-y-4 pointer-events-none transition-all duration-400 ease-out origin-bottom-right scale-95">
+            <div class="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent rounded-2xl pointer-events-none"></div>
+            <h4 class="text-sm text-primary mb-2 relative z-10"
+               style="font-family: 'Gilroy ExtraBold', sans-serif;">
+               Keep CapScript Free
+            </h4>
+            <p class="text-xs text-muted leading-relaxed mb-4 relative z-10">
+               100% independently developed. A small donation helps pay for hosting, code signing, and endless late nights tracking down YouTube API changes.
+            </p>
+            <a href="https://ko-fi.com/serptail" target="_blank" class="block w-full text-center bg-accent text-white py-2 rounded-lg text-xs font-bold hover:bg-accent-hover transition-colors shadow-[0_0_15px_rgba(255,0,51,0.3)] relative z-10">
+            Buy me a coffee ☕
+            </a>
+            <div class="absolute -bottom-2 right-6 w-4 h-4 bg-surface/90 border-b border-r border-border rotate-45"></div>
+         </div>
+         <button id="supportButtonMain" class="bg-accent/20 text-white border border-accent border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 transition-shadow shadow-[0_0_20px_rgba(255,0,51,0.3)] hover:shadow-[0_0_30px_rgba(255,0,51,0.5)]" onclick="window.open('https://github.com/serptail','_blank')">
+            <span class="bg-accent absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 hover:opacity-60 duration-500 shadow-[0_0_10px_10px_rgba(255,0,51,0.4)]" id="supportButtonGlow"></span>
+            <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#ffffff" class="w-4 h-4 inline-block mr-2" aria-hidden="true">
+               <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+               <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+               <g id="SVGRepo_iconCarrier">
+                  <path fill="#ffffff" d="M822.592 192h14.272a32 32 0 0 1 31.616 26.752l21.312 128A32 32 0 0 1 858.24 384h-49.344l-39.04 546.304A32 32 0 0 1 737.92 960H285.824a32 32 0 0 1-32-29.696L214.912 384H165.76a32 32 0 0 1-31.552-37.248l21.312-128A32 32 0 0 1 187.136 192h14.016l-6.72-93.696A32 32 0 0 1 226.368 64h571.008a32 32 0 0 1 31.936 34.304L822.592 192zm-64.128 0 4.544-64H260.736l4.544 64h493.184zm-548.16 128H820.48l-10.688-64H214.208l-10.688 64h6.784zm68.736 64 36.544 512H708.16l36.544-512H279.04z"></path>
+               </g>
+            </svg>
+            <span class="align-middle" style="font-family: 'Gilroy ExtraBold', sans-serif;">
+            Support
+            </span>
+         </button>
+      </div>
+      <script>
+         const supportButton = document.getElementById('supportButtonMain');
+         const supportPopover = document.getElementById('supportPopover');
+         let hoverTimeout;
+         
+         function showPopover() {
+           clearTimeout(hoverTimeout);
+           supportPopover.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none', 'scale-95');
+           supportPopover.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto', 'scale-100');
+           const glow = document.getElementById('supportButtonGlow');
+           glow.style.top = '150%';
+         }
+         
+         function hidePopover() {
+           hoverTimeout = setTimeout(() => {
+             supportPopover.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none', 'scale-95');
+             supportPopover.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto', 'scale-100');
+             const glow = document.getElementById('supportButtonGlow');
+             glow.style.top = '-150%';
+           }, 150);
+         }
+         
+         supportButton.addEventListener('mouseenter', showPopover);
+         supportButton.addEventListener('mouseleave', hidePopover);
+         supportPopover.addEventListener('mouseenter', showPopover);
+         supportPopover.addEventListener('mouseleave', hidePopover);
+         
+         window.addEventListener('scroll', () => {
+           const footer = document.querySelector('footer');
+           const supportButtonContainer = document.getElementById('supportButton');
+           
+           if (footer) {
+             const footerRect = footer.getBoundingClientRect();
+             const viewportHeight = window.innerHeight;
+             
+             if (footerRect.top < viewportHeight) {
+               const distanceFromBottom = viewportHeight - footerRect.top + 24;
+               supportButtonContainer.style.bottom = distanceFromBottom + 'px';
+             } else {
+               supportButtonContainer.style.bottom = '24px';
+             }
+           }
+         });
+      </script>
+      <footer class="bg-background pt-16 pb-8 border-t border-border relative">
+         <div class="container mx-auto px-4 md:px-8">
+            <div class="flex justify-center gap-6 text-sm text-muted font-medium mb-12">
+               <a href="https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool" class="hover:text-primary transition-colors">GitHub Repository</a>
+               <a href="#" id="openLicense" class="hover:text-accent transition-colors">Licenses</a>
+               <a id="latest-manifest-link" href="https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool/blob/main/docs/releases/latest.json" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">Latest Manifest</a>
+            </div>
+            <div class="text-xs text-muted/50 text-center max-w-4xl mx-auto leading-relaxed space-y-4">
+               <p>
+                  CapScript Pro is not affiliated with yt-dlp or FFMPEG. yt-dlp and FFMPEG are third-party tools developed and maintained by their respective communities. Please check the yt-dlp and ffmpeg official websites for more information on these tools.
+               </p>
+               <span style="color:#a6a6a6;">Licensed under MIT + Commons Clause v1.0 — viewing and modification permitted; selling or redistribution prohibited.</span>
+                      <p class="text-accent/80 font-medium">Thank you all for your support!</p>
+                      <div class="pt-4 flex items-center justify-center text-muted">
+                           <a href="https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+                              <button class="btn">
+                                 <svg
+                                    class="icon"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                 >
+                                    <path
+                                       d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                                    ></path>
+                                 </svg>
+                              </button>
+                           </a>
+                      </div>
+               <p>
+                  &copy; <span id="year"></span> serptail. All rights reserved. <br/> Windows is a registered trademark of Microsoft Corporation.
+               </p>
+            </div>
+            <div class="absolute left-6 bottom-6 lg:left-8 lg:bottom-8">
+               <button class="button button--sm" aria-label="Made by Serptail" onclick="window.open('https://github.com/serptail','_blank')">
+                  <p class="button__text">
+                     <span style="--index: 0;">M</span>
+                     <span style="--index: 1;">A</span>
+                     <span style="--index: 2;">D</span>
+                     <span style="--index: 3;">E</span>
+                     <span style="--index: 4;"> </span>
+                     <span style="--index: 5;">•</span>
+                     <span style="--index: 6;"> </span>
+                     <span style="--index: 7;">B</span>
+                     <span style="--index: 8;">Y</span>
+                     <span style="--index: 9;"> </span>
+                     <span style="--index: 10;">•</span>
+                     <span style="--index: 11;"> </span>
+                     <span style="--index: 12;">~</span>
+                     <span style="--index: 13;">S</span>
+                     <span style="--index: 14;">E</span>
+                     <span style="--index: 15;">R</span>
+                     <span style="--index: 16;">P</span>
+                     <span style="--index: 17;">T</span>
+                     <span style="--index: 18;">A</span>
+                     <span style="--index: 19;">I</span>
+                     <span style="--index: 20;">L</span>
+                     <span style="--index: 21;"> </span>
+                     <span style="--index: 22;">•</span>
+                     <span style="--index: 23;"> </span>
+                  </p>
+                  <div class="button__circle">
+                     <svg viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg" class="button__icon" width="10">
+                        <path d="M13.376 11.552l-.264-10.44-10.44-.24.024 2.28 6.96-.048L.2 12.56l1.488 1.488 9.432-9.432-.048 6.912 2.304.024z" fill="currentColor"></path>
+                     </svg>
+                     <svg viewBox="0 0 14 15" fill="none" width="10" xmlns="http://www.w3.org/2000/svg" class="button__icon button__icon--copy">
+                        <path d="M13.376 11.552l-.264-10.44-10.44-.24.024 2.28 6.96-.048L.2 12.56l1.488 1.488 9.432-9.432-.048 6.912 2.304.024z" fill="currentColor"></path>
+                     </svg>
+                  </div>
+               </button>
+            </div>
+         </div>
+      </footer>
+      
+      
+      <div id="licenseModal"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="licenseTitle"
+         class="lm-overlay">
+         
+         <div id="licenseContent" class="lm-shell">
+            
+            <header class="lm-header">
+               <div class="lm-header-inner">
+                  <div>
+                     <h2 id="licenseTitle" class="lm-title">Legal &amp; Licenses</h2>
+                     <p class="lm-subtitle">CapScript Pro · v2.x · &copy; <span class="lm-year"></span> serptail</p>
+                  </div>
+               </div>
+               <button id="closeLicense" class="lm-close" aria-label="Close license dialog">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                     <line x1="18" y1="6" x2="6" y2="18"/>
+                     <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+               </button>
+            </header>
+            
+            <div class="lm-body">
+               
+               <nav class="lm-nav" aria-label="License sections">
+                  <button class="lm-nav-item active" data-target="sec-capscript">
+                  <span class="lm-nav-dot"></span>
+                  <span>CapScript Pro</span>
+                  </button>
+                  <button class="lm-nav-item" data-target="sec-commons">
+                  <span class="lm-nav-dot"></span>
+                  <span>Commons Clause</span>
+                  </button>
+                  <button class="lm-nav-item" data-target="sec-ytdlp">
+                  <span class="lm-nav-dot"></span>
+                  <span>yt-dlp</span>
+                  </button>
+                  <button class="lm-nav-item" data-target="sec-ffmpeg">
+                  <span class="lm-nav-dot"></span>
+                  <span>FFmpeg</span>
+                  </button>
+                  <button class="lm-nav-item" data-target="sec-fonts">
+                  <span class="lm-nav-dot"></span>
+                  <span>Fonts</span>
+                  </button>
+                  <button class="lm-nav-item" data-target="sec-disclaimer">
+                  <span class="lm-nav-dot"></span>
+                  <span>Disclaimer</span>
+                  </button>
+               </nav>
+               
+               <div class="lm-content" id="licenseScrollArea">
+                  
+                  <section id="sec-capscript" class="lm-section">
+                     <div class="lm-section-header">
+                        <span class="lm-tag">Primary License</span>
+                        <h3 class="lm-section-title">MIT License</h3>
+                        <p class="lm-section-desc">
+                           CapScript Pro is released under the MIT License, extended with the Commons Clause restriction. The MIT License grants broad permissions to use, copy, modify, and distribute this software.
+                        </p>
+                        <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer" class="lm-link">
+                           View on opensource.org
+                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                              <polyline points="15 3 21 3 21 9"/>
+                              <line x1="10" y1="14" x2="21" y2="3"/>
+                           </svg>
+                        </a>
+                     </div>
+                     <pre class="lm-pre">MIT License
+
+Copyright (c) 2026 serptail
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</pre>
+                  </section>
+                  <div class="lm-divider"></div>
+                  
+                  <section id="sec-commons" class="lm-section">
+                     <div class="lm-section-header">
+                        <span class="lm-tag lm-tag--warn">Restriction</span>
+                        <h3 class="lm-section-title">Commons Clause v1.0</h3>
+                        <p class="lm-section-desc">
+                           The Commons Clause is an addendum applied on top of the MIT License. It restricts the right to sell CapScript Pro or offer it as a commercial service. All other permissions granted by the MIT License remain in effect.
+                        </p>
+                        <a href="https://commonsclause.com" target="_blank" rel="noopener noreferrer" class="lm-link">
+                           View on commonsclause.com
+                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                              <polyline points="15 3 21 3 21 9"/>
+                              <line x1="10" y1="14" x2="21" y2="3"/>
+                           </svg>
+                        </a>
+                     </div>
+                     <pre class="lm-pre">Commons Clause — Restriction Addendum, Version 1.0
+
+The Software is provided to you by the Licensor under the License, as defined
+below, subject to the following condition.
+
+Without limiting other conditions in the License, the grant of rights under
+the License will not include, and the License does not grant to you, the right
+to Sell the Software.
+
+For purposes of the foregoing, "Sell" means practicing any or all of the
+rights granted to you under the License to provide to third parties, for a
+fee or other consideration (including without limitation fees for hosting or
+consulting / support services related to the Software), a product or service
+whose value derives, entirely or substantially, from the functionality of the
+Software. Any license notice or attribution required by the License must also
+include this Commons Clause License Condition notice.
+
+Software: CapScript Pro
+License:  MIT License
+Licensor: serptail
+
+This restriction supplements, and does not replace, the terms of the License.
+All rights not expressly granted by the License and this Restriction are
+reserved by Licensor.</pre>
+                  </section>
+                  <div class="lm-divider"></div>
+                  
+                  <section id="sec-ytdlp" class="lm-section">
+                     <div class="lm-section-header">
+                        <span class="lm-tag lm-tag--third">Third-Party</span>
+                        <h3 class="lm-section-title">yt-dlp</h3>
+                        <p class="lm-section-desc">
+                           CapScript Pro integrates with yt-dlp, an open-source command-line tool for downloading media. yt-dlp is released under The Unlicense, placing it in the public domain. CapScript Pro is not affiliated with or endorsed by the yt-dlp project.
+                        </p>
+                        <a href="https://github.com/yt-dlp/yt-dlp/blob/master/LICENSE" target="_blank" rel="noopener noreferrer" class="lm-link">
+                           View on GitHub
+                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                              <polyline points="15 3 21 3 21 9"/>
+                              <line x1="10" y1="14" x2="21" y2="3"/>
+                           </svg>
+                        </a>
+                     </div>
+                     <pre class="lm-pre">The Unlicense
+
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or distribute
+this software, either in source code form or as a compiled binary, for any
+purpose, commercial or non-commercial, and by any means.
+
+In jurisdictions that recognize copyright laws, the author or authors of this
+software dedicate any and all copyright interest in the software to the public
+domain. We make this dedication for the benefit of the public at large and to
+the detriment of our heirs and successors. We intend this dedication to be an
+overt act of relinquishment in perpetuity of all present and future rights to
+this software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to &lt;https://unlicense.org&gt;</pre>
+                  </section>
+                  <div class="lm-divider"></div>
+                  
+                  <section id="sec-ffmpeg" class="lm-section">
+                     <div class="lm-section-header">
+                        <span class="lm-tag lm-tag--third">Third-Party</span>
+                        <h3 class="lm-section-title">FFmpeg</h3>
+                        <p class="lm-section-desc">
+                           CapScript Pro integrates with FFmpeg for media processing. FFmpeg is licensed under the GNU Lesser General Public License v2.1 or later (LGPL v2.1+). CapScript Pro dynamically links to FFmpeg and does not modify its source code. CapScript Pro is not affiliated with or endorsed by the FFmpeg project.
+                        </p>
+                        <div class="lm-link-row">
+                           <a href="https://ffmpeg.org/legal.html" target="_blank" rel="noopener noreferrer" class="lm-link">
+                              ffmpeg.org/legal
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                 <polyline points="15 3 21 3 21 9"/>
+                                 <line x1="10" y1="14" x2="21" y2="3"/>
+                              </svg>
+                           </a>
+                           <a href="https://www.gnu.org/licenses/lgpl-2.1.html" target="_blank" rel="noopener noreferrer" class="lm-link">
+                              GNU LGPL v2.1 Full Text
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                 <polyline points="15 3 21 3 21 9"/>
+                                 <line x1="10" y1="14" x2="21" y2="3"/>
+                              </svg>
+                           </a>
+                        </div>
+                     </div>
+                     <pre class="lm-pre">GNU LESSER GENERAL PUBLIC LICENSE
+Version 2.1, February 1999
+
+Copyright (C) 1991, 1999 Free Software Foundation, Inc.
+51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+Everyone is permitted to copy and distribute verbatim copies of this license
+document, but changing it is not allowed.
+
+[This is the first released version of the Lesser GPL. It also counts as the
+successor of the GNU Library Public License, version 2, hence the version
+number 2.1.]
+
+                         Preamble
+
+The licenses for most software are designed to take away your freedom to
+share and change it. By contrast, the GNU General Public Licenses are
+intended to guarantee your freedom to share and change free software — to
+make sure the software is free for all its users.
+
+This license, the Lesser General Public License, applies to some specially
+designated software packages — typically libraries — of the Free Software
+Foundation and other authors who decide to use it. You can use it too, but
+we suggest you first think carefully about whether this license or the
+ordinary General Public License is the better strategy to use in any
+particular case, based on the explanations below.
+
+FFmpeg is licensed under the LGPL version 2.1 or later. However, FFmpeg
+incorporates several optional parts and optimizations that are covered by
+the GNU General Public License (GPL) version 2 or later. If those parts
+get used the resulting binary will be under the GPL version 2 or later.
+
+For the complete license text, please visit:
+https://www.gnu.org/licenses/lgpl-2.1.html
+
+CapScript Pro uses FFmpeg as an external binary tool. The source code for
+FFmpeg, as required by the LGPL, is available at: https://ffmpeg.org/</pre>
+                  </section>
+                  <div class="lm-divider"></div>
+                  
+                  <section id="sec-fonts" class="lm-section">
+                     <div class="lm-section-header">
+                        <span class="lm-tag lm-tag--third">Third-Party</span>
+                        <h3 class="lm-section-title">Typefaces &amp; Fonts</h3>
+                        <p class="lm-section-desc">
+                           The following typefaces are used in CapScript Pro and its website. Each is distributed under its own free font license agreement. Please refer to the individual license documents for details on usage rights and restrictions.
+                        </p>
+                     </div>
+                     
+                     <div class="lm-font-list">
+                        <div class="lm-font-card">
+                           <div class="lm-font-info">
+                              <span class="lm-font-name">Akrobat Font Family - Sans Serif Typeface</span>
+                              <span class="lm-font-author">Plamen Motev - Fontfabric</span>
+                           </div>
+                           <div class="lm-link-row">
+                              <a href="https://www.fontfabric.com/fonts/akrobat/" target="_blank" rel="noopener noreferrer" class="lm-link lm-link--sm">
+                                 Source
+                                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                 </svg>
+                              </a>
+                              <a href="https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool/blob/main/docs/assets/fonts/license/Akrobat-License.pdf" target="_blank" rel="noopener noreferrer" class="lm-link lm-link--sm">
+                                 FONTFABRIC EULA
+                                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                 </svg>
+                              </a>
+                           </div>
+                        </div>
+                        <div class="lm-font-card">
+                           <div class="lm-font-info">
+                              <span class="lm-font-name">Gilroy Typefamily - Sans Serif Typeface</span>
+                              <span class="lm-font-author">Radomir Tinkov</span>
+                           </div>
+                           <div class="lm-link-row">
+                              <a href="https://www.behance.net/gallery/40515971/Gilroy-Typefamily" target="_blank" rel="noopener noreferrer" class="lm-link lm-link--sm">
+                                 Source
+                                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                 </svg>
+                              </a>
+                              <a href="https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool/blob/main/docs/assets/fonts/license/Gilroy-License.pdf" target="_blank" rel="noopener noreferrer" class="lm-link lm-link--sm">
+                                 Radomir Tinkov EULA
+                                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                 </svg>
+                              </a>
+                           </div>
+                        </div>
+                     </div>
+                  </section>
+                  <div class="lm-divider"></div>
+                  
+                  <section id="sec-disclaimer" class="lm-section">
+                     <div class="lm-section-header">
+                        <span class="lm-tag lm-tag--info">Notice</span>
+                        <h3 class="lm-section-title">Disclaimer &amp; Notices</h3>
+                     </div>
+                     <div class="lm-disclaimer-blocks">
+                        <div class="lm-notice-card">
+                           <h4 class="lm-notice-title">No Affiliation</h4>
+                           <p class="lm-notice-text">CapScript Pro is an independent project and is not affiliated with, endorsed by, or officially connected to yt-dlp, FFmpeg, or their respective developer communities. All product names, trademarks, and registered trademarks are the property of their respective owners.</p>
+                        </div>
+                        <div class="lm-notice-card">
+                           <h4 class="lm-notice-title">No Warranty</h4>
+                           <p class="lm-notice-text">This software is provided "as is", without warranty of any kind, express or implied. The author shall not be held liable for any damages, data loss, or legal consequences arising from the use of this software or any third-party tools it integrates with.</p>
+                        </div>
+                        <div class="lm-notice-card">
+                           <h4 class="lm-notice-title">User Responsibility</h4>
+                           <p class="lm-notice-text">It is solely the user's responsibility to ensure that any content downloaded or processed using CapScript Pro complies with applicable copyright laws, platform terms of service, and local regulations. The author assumes no liability for misuse.</p>
+                        </div>
+                        <div class="lm-notice-card">
+                           <h4 class="lm-notice-title">Trademark Notice</h4>
+                           <p class="lm-notice-text">Windows® is a registered trademark of Microsoft Corporation in the United States and other countries. This software is not affiliated with or endorsed by Microsoft Corporation.</p>
+                        </div>
+                     </div>
+                  </section>
+                  <div class="lm-footer-note">
+                     Last updated: 2026 · For legal inquiries, please open an issue on the
+                     <a href="https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool" target="_blank" rel="noopener noreferrer" class="lm-link lm-link--inline">GitHub Repository</a>.
+                  </div>
+               </div>
+               
+            </div>
+            
+         </div>
+         
+      </div>
+      
+      
+      <style>
+         /* ── Overlay ── */
+         .lm-overlay {
+         position: fixed;
+         inset: 0;
+         z-index: 9999;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         padding: 1rem;
+         background: rgba(0, 0, 0, 0.85);
+         backdrop-filter: blur(8px);
+         -webkit-backdrop-filter: blur(8px);
+         /* hidden state */
+         opacity: 0;
+         pointer-events: none;
+         transition: opacity 0.3s ease;
+         }
+         .lm-overlay.lm-open {
+         opacity: 1;
+         pointer-events: all;
+         }
+         /* ── Shell ── */
+         .lm-shell {
+         position: relative;
+         width: 100%;
+         max-width: 860px;
+         max-height: 88vh;
+         display: flex;
+         flex-direction: column;
+         background: var(--color-surface, #131313);
+         border: 1px solid var(--color-border, rgba(255,255,255,0.08));
+         border-radius: 16px;
+         overflow: hidden;
+         box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+         /* animation */
+         transform: translateY(24px) scale(0.97);
+         opacity: 0;
+         transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+         opacity 0.35s ease;
+         }
+         .lm-overlay.lm-open .lm-shell {
+         transform: translateY(0) scale(1);
+         opacity: 1;
+         }
+         /* ── Header ── */
+         .lm-header {
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+         padding: 1.25rem 1.5rem;
+         border-bottom: 1px solid var(--color-border, rgba(255,255,255,0.08));
+         background: rgba(255,255,255,0.02);
+         flex-shrink: 0;
+         }
+         .lm-header-inner { display: flex; align-items: center; gap: 0.875rem; }
+         .lm-header-badge {
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         width: 36px;
+         height: 36px;
+         border-radius: 8px;
+         background: rgba(255,255,255,0.06);
+         border: 1px solid var(--color-border, rgba(255,255,255,0.1));
+         color: #FF0033;
+         flex-shrink: 0;
+         }
+         .lm-title {
+         font-size: 0.9375rem;
+         font-weight: 600;
+         color: var(--color-primary, #f5f5f5);
+         margin: 0;
+         letter-spacing: -0.01em;
+         }
+         .lm-subtitle {
+         font-size: 0.6875rem;
+         color: var(--color-muted, #777);
+         margin: 0;
+         margin-top: 1px;
+         letter-spacing: 0.02em;
+         }
+         .lm-close {
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         width: 32px;
+         height: 32px;
+         border-radius: 6px;
+         border: 1px solid transparent;
+         background: transparent;
+         color: var(--color-muted, #777);
+         cursor: pointer;
+         transition: background 0.15s, border-color 0.15s, color 0.15s;
+         flex-shrink: 0;
+         }
+         .lm-close:hover {
+         background: rgba(255,255,255,0.06);
+         border-color: var(--color-border, rgba(255,255,255,0.1));
+         color: var(--color-primary, #f5f5f5);
+         }
+         /* ── Body Layout ── */
+         .lm-body {
+         display: flex;
+         flex: 1;
+         min-height: 0;
+         }
+         /* ── Sidebar Nav ── */
+         .lm-nav {
+         width: 168px;
+         flex-shrink: 0;
+         padding: 1.25rem 0.75rem;
+         border-right: 1px solid var(--color-border, rgba(255,255,255,0.08));
+         background: rgba(255,255,255,0.01);
+         display: flex;
+         flex-direction: column;
+         gap: 2px;
+         overflow-y: auto;
+         }
+         .lm-nav-item {
+         display: flex;
+         align-items: center;
+         gap: 0.625rem;
+         padding: 0.5rem 0.625rem;
+         border-radius: 7px;
+         border: none;
+         background: transparent;
+         color: var(--color-muted, #777);
+         font-size: 0.775rem;
+         font-weight: 500;
+         text-align: left;
+         cursor: pointer;
+         width: 100%;
+         transition: background 0.15s, color 0.15s;
+         letter-spacing: 0.01em;
+         white-space: nowrap;
+         }
+         .lm-nav-item:hover {
+         background: rgba(255,255,255,0.05);
+         color: var(--color-primary, #f5f5f5);
+         }
+         .lm-nav-item.active {
+         background: rgba(255,255,255,0.07);
+         color: var(--color-primary, #f5f5f5);
+         }
+         .lm-nav-dot {
+         width: 5px;
+         height: 5px;
+         border-radius: 50%;
+         border: 1.5px solid currentColor;
+         flex-shrink: 0;
+         opacity: 0.5;
+         transition: opacity 0.15s, background 0.15s;
+         }
+         .lm-nav-item.active .lm-nav-dot {
+         background: #FF0033;
+         border-color: #FF0033;
+         opacity: 1;
+         }
+         /* ── Scrollable Content ── */
+         .lm-content {
+         flex: 1;
+         overflow-y: auto;
+         padding: 1.75rem 1.75rem;
+         scroll-behavior: smooth;
+         }
+         .lm-content::-webkit-scrollbar { width: 5px; }
+         .lm-content::-webkit-scrollbar-track { background: transparent; }
+         .lm-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+         .lm-content::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+         .lm-nav::-webkit-scrollbar { width: 3px; }
+         .lm-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 99px; }
+         /* ── Section ── */
+         .lm-section { scroll-margin-top: 0; }
+         .lm-section-header { margin-bottom: 1.125rem; }
+         .lm-section-title {
+         font-size: 1.0625rem;
+         font-weight: 600;
+         color: var(--color-primary, #f5f5f5);
+         margin: 0.375rem 0 0.5rem;
+         letter-spacing: -0.02em;
+         }
+         .lm-section-desc {
+         font-size: 0.8125rem;
+         color: var(--color-muted, #888);
+         line-height: 1.65;
+         margin: 0 0 0.75rem;
+         max-width: 56ch;
+         }
+         /* ── Tags ── */
+         .lm-tag {
+         display: inline-block;
+         font-size: 0.625rem;
+         font-weight: 600;
+         letter-spacing: 0.08em;
+         text-transform: uppercase;
+         padding: 0.2rem 0.55rem;
+         border-radius: 4px;
+         background: rgba(255,255,255,0.06);
+         color: var(--color-muted, #888);
+         border: 1px solid var(--color-border, rgba(255,255,255,0.08));
+         }
+         .lm-tag--warn {
+         background: rgba(251, 191, 36, 0.08);
+         color: #fbbf24;
+         border-color: rgba(251, 191, 36, 0.2);
+         }
+         .lm-tag--third {
+         background: rgba(255,0,51,0.08);
+         color: #FF0033;
+         border-color: rgba(255,0,51,0.2);
+         }
+         .lm-tag--info {
+         background: rgba(96, 165, 250, 0.08);
+         color: #60a5fa;
+         border-color: rgba(96, 165, 250, 0.2);
+         }
+         /* ── Links ── */
+         .lm-link {
+         display: inline-flex;
+         align-items: center;
+         gap: 0.3rem;
+         font-size: 0.75rem;
+         font-weight: 500;
+         color: #FF0033;
+         text-decoration: none;
+         border-bottom: 1px solid transparent;
+         padding-bottom: 1px;
+         transition: border-color 0.15s, opacity 0.15s;
+         }
+         .lm-link:hover { border-color: #FF0033; opacity: 0.85; }
+         .lm-link--sm { font-size: 0.6875rem; }
+         .lm-link--inline { font-size: inherit; }
+         .lm-link-row { display: flex; flex-wrap: wrap; gap: 1rem; }
+         /* ── Pre / License text ── */
+         .lm-pre {
+         font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+         font-size: 0.6875rem;
+         line-height: 1.75;
+         color: var(--color-muted, #888);
+         white-space: pre-wrap;
+         word-break: break-word;
+         background: rgba(0,0,0,0.25);
+         border: 1px solid var(--color-border, rgba(255,255,255,0.06));
+         border-radius: 8px;
+         padding: 1.125rem 1.25rem;
+         margin: 0;
+         }
+         /* ── Divider ── */
+         .lm-divider {
+         height: 1px;
+         background: var(--color-border, rgba(255,255,255,0.07));
+         margin: 2rem 0;
+         }
+         /* ── Font list ── */
+         .lm-font-list { display: flex; flex-direction: column; gap: 0.5rem; }
+         .lm-font-card {
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+         padding: 0.625rem 0.875rem;
+         background: rgba(255,255,255,0.03);
+         border: 1px solid var(--color-border, rgba(255,255,255,0.07));
+         border-radius: 8px;
+         }
+         .lm-font-info { display: flex; flex-direction: column; gap: 2px; }
+         .lm-font-name { font-size: 0.8125rem; font-weight: 500; color: var(--color-primary, #f5f5f5); }
+         .lm-font-author { font-size: 0.6875rem; color: var(--color-muted, #777); }
+         /* ── Disclaimer notice cards ── */
+         .lm-disclaimer-blocks {
+         display: grid;
+         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+         gap: 0.75rem;
+         margin-bottom: 1.5rem;
+         }
+         .checksum-copybox {
+         display: flex;
+         align-items: center;
+         gap: 0.5rem;
+         background: rgba(0, 0, 0, 0.28);
+         border: 1px solid rgba(255, 255, 255, 0.11);
+         border-radius: 8px;
+         padding: 0.5rem 0.625rem;
+         width: 100%;
+         min-width: 0;
+         }
+         .checksum-copybox code {
+         margin: 0;
+         flex: 1;
+         min-width: 0;
+         white-space: normal;
+         overflow-wrap: anywhere;
+         word-break: break-word;
+         }
+         .btn {
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         width: 25px;
+         height: 25px;
+         border-radius: 50%;
+         cursor: pointer;
+         border: none;
+         background-color: rgba(255, 255, 255, 0.1);
+         position: relative;
+         transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+         }
+         
+         .btn::after {
+         content: "Star on GitHub!";
+         width: max-content;
+         height: fit-content;
+         position: absolute;
+         font-size: 10px;
+         font-family: "Lucida Sans", sans-serif;
+         font-weight: bold;
+         color: white;
+         background-color: rgba(255, 255, 255, 0.2);
+         padding: 3px 7px;
+         border-radius: 4px;
+         backdrop-filter: blur(4px);
+         opacity: 0;
+         visibility: hidden;
+         transition: all 0.3s ease;
+         top: 115%;
+         pointer-events: none;
+         white-space: nowrap;
+         }
+         
+         .icon {
+         width: 12px;
+         height: 12px;
+         fill: white;
+         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+         }
+         
+         .btn:hover {
+         background-color: rgba(255, 255, 255, 0.2);
+         transform: scale(1.05);
+         }
+         
+         .btn:hover > .icon {
+         fill: #FFD700;
+         transform: scale(1.2);
+         }
+         
+         .btn:hover::after {
+         visibility: visible;
+         opacity: 1;
+         top: 125%;
+         }
+         .lm-notice-card {
+         padding: 1rem;
+         background: rgba(255,255,255,0.02);
+         border: 1px solid var(--color-border, rgba(255,255,255,0.07));
+         border-radius: 10px;
+         }
+         .lm-notice-title {
+         font-size: 0.75rem;
+         font-weight: 600;
+         color: var(--color-primary, #f5f5f5);
+         margin: 0 0 0.4rem;
+         letter-spacing: 0.01em;
+         }
+         .lm-notice-text {
+         font-size: 0.725rem;
+         color: var(--color-muted, #888);
+         line-height: 1.65;
+         margin: 0;
+         }
+         /* ── Footer note ── */
+         .lm-footer-note {
+         margin-top: 2rem;
+         padding-top: 1.25rem;
+         border-top: 1px solid var(--color-border, rgba(255,255,255,0.07));
+         font-size: 0.6875rem;
+         color: var(--color-muted, #777);
+         text-align: center;
+         }
+         /* ── Responsive: collapse sidebar on small screens ── */
+         @media (max-width: 600px) {
+         .lm-nav { display: none; }
+         .lm-content { padding: 1.25rem; }
+         .lm-disclaimer-blocks { grid-template-columns: 1fr; }
+         }
+      </style>
+      
+      <script>
+         (function () {
+           const overlay  = document.getElementById('licenseModal');
+           const openBtn  = document.getElementById('openLicense');
+           const closeBtn = document.getElementById('closeLicense');
+           const navItems = document.querySelectorAll('.lm-nav-item');
+           const content  = document.getElementById('licenseScrollArea');
+         
+           /* Stamp year */
+           document.querySelectorAll('.lm-year').forEach(el => el.textContent = new Date().getFullYear());
+         
+           /* Open */
+           openBtn.addEventListener('click', e => {
+             e.preventDefault();
+             overlay.classList.add('lm-open');
+             document.body.style.overflow = 'hidden';
+             closeBtn.focus();
+           });
+         
+           /* Close helpers */
+           function closeModal() {
+             overlay.classList.remove('lm-open');
+             document.body.style.overflow = '';
+             openBtn.focus();
+           }
+           closeBtn.addEventListener('click', closeModal);
+           overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+           document.addEventListener('keydown', e => { if (e.key === 'Escape' && overlay.classList.contains('lm-open')) closeModal(); });
+         
+           /* Sidebar nav scroll + active state */
+           navItems.forEach(btn => {
+             btn.addEventListener('click', () => {
+               const target = document.getElementById(btn.dataset.target);
+               if (!target) return;
+               target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+               navItems.forEach(b => b.classList.remove('active'));
+               btn.classList.add('active');
+             });
+           });
+         
+           /* Highlight active nav on scroll */
+           const sections = [...document.querySelectorAll('.lm-section')];
+           content.addEventListener('scroll', () => {
+             const scrollTop = content.scrollTop;
+             let current = sections[0];
+             sections.forEach(sec => {
+               if (sec.offsetTop - 40 <= scrollTop) current = sec;
+             });
+             navItems.forEach(btn => {
+               btn.classList.toggle('active', btn.dataset.target === current.id);
+             });
+           }, { passive: true });
+         })();
+      </script>
+      <script src="app.js"></script>
+      <script src="animations.js" defer></script>
+   </body>
+</html>

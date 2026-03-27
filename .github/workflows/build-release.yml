@@ -1,0 +1,137 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  QT_VERSION: "6.10.2"
+  PYTHON_VERSION: "3.11"
+  BUILD_TYPE: Release
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: List available Qt tools (debug)
+        run: pip install aqtinstall && aqt list-tool windows desktop
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: windows
+          target: desktop
+          arch: win64_mingw
+          modules: qtmultimedia qtshadertools qtwebview
+          tools: tools_mingw1310
+          cache: true
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Python packages
+        run: pip install -r python/requirements.txt
+
+      - name: Download WebView2 SDK
+        shell: pwsh
+        run: |
+          nuget install Microsoft.Web.WebView2 -OutputDirectory wv2_pkg
+          $wv2Dir = Get-ChildItem -Path wv2_pkg -Filter "Microsoft.Web.WebView2.*" -Directory | Select-Object -First 1
+          $destBase  = "third_party/webview2/sdk/build/native"
+          New-Item -ItemType Directory -Path "$destBase/include" -Force | Out-Null
+          New-Item -ItemType Directory -Path "$destBase/x64"     -Force | Out-Null
+          Copy-Item "$($wv2Dir.FullName)/build/native/include/*" "$destBase/include/" -Recurse -Force
+          Copy-Item "$($wv2Dir.FullName)/build/native/x64/*"     "$destBase/x64/"     -Recurse -Force
+          Write-Host "WebView2 SDK installed to $destBase"
+
+      - name: Configure CMake
+        shell: pwsh
+        run: |
+          # Qt's bundled MinGW is installed under Qt\Tools\mingw*\bin
+          $qtBase   = (Get-Item "$env:QT_ROOT_DIR").Parent.Parent.FullName
+          $toolsDir = Join-Path $qtBase "Tools"
+          Write-Host "Searching: $toolsDir"
+      
+          $mingwDir = Get-ChildItem $toolsDir -Directory -ErrorAction SilentlyContinue |
+                      Where-Object { $_.Name -like "mingw*" } |
+                      Sort-Object Name -Descending |
+                      Select-Object -First 1
+      
+          if (-not $mingwDir) { Write-Error "Qt MinGW not found in $toolsDir"; exit 1 }
+      
+          $mingwBin = "$($mingwDir.FullName)\bin"
+          Write-Host "Using MinGW bin: $mingwBin"
+      
+          # Sanity check — must NOT be the system C:\mingw64
+          if ($mingwBin -like "C:\mingw64*") {
+            Write-Error "Resolved to system MinGW — ABI mismatch with Qt libs. Check tools: in install-qt-action."
+            exit 1
+          }
+      
+          cmake -B build -G "Ninja" `
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
+            -DCMAKE_CXX_COMPILER="$mingwBin\g++.exe" `
+            -DCMAKE_C_COMPILER="$mingwBin\gcc.exe" `
+            -DQt6_DIR="$env:Qt6_DIR" `
+            -DPython3_ROOT_DIR="$env:pythonLocation" `
+            -DCMAKE_EXE_LINKER_FLAGS="-Wl,--allow-multiple-definition"
+      
+      - name: Build
+        shell: pwsh
+        run: cmake --build build --config ${{ env.BUILD_TYPE }}
+
+      - name: Deploy Qt runtime
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path "build" -Filter "CapScriptPro.exe" -Recurse | Select-Object -First 1
+          if (-not $exe) { Write-Error "CapScriptPro.exe not found"; exit 1 }
+      
+          # windeployqt lives beside the Qt kit, not on C:\
+          $windeployqt = Join-Path $env:QT_ROOT_DIR "bin\windeployqt.exe"
+          if (-not (Test-Path $windeployqt)) { Write-Error "windeployqt not found at $windeployqt"; exit 1 }
+      
+          Write-Host "Deploying Qt for $($exe.FullName)"
+          & $windeployqt $exe.FullName --no-translations --no-system-d3d-compiler --no-opengl-sw
+
+      - name: Create release archive
+        shell: pwsh
+        run: |
+          $exePath = (Get-ChildItem -Path "build" -Filter "CapScriptPro.exe" -Recurse | Select-Object -First 1).FullName
+          $exeDir = [System.IO.Path]::GetDirectoryName($exePath)
+          Write-Host "Archiving contents of $exeDir"
+          Compress-Archive -Path "$exeDir\*" -DestinationPath "CapScriptPro-Windows-x64.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CapScriptPro-Windows-x64
+          path: CapScriptPro-Windows-x64.zip
+
+  release:
+    needs: [build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          files: |
+            CapScriptPro-Windows-x64.zip
