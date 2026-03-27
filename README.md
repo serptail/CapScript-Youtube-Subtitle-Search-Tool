@@ -4,11 +4,14 @@
   </a>
 </p>
 
+<p align="center">
 [![Release](https://img.shields.io/badge/Release-v2.0-red.svg)](https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool/releases)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+</p>
 
 <p align="center">
-<img width="1024" height="1024" alt="capscript-png-noborder" src="https://github.com/user-attachments/assets/f74f21bf-5a32-49dc-9fe4-271a74755ca4" />
+<img width="1024" height="524" alt="capscript-png-noborder" src="https://github.com/user-attachments/assets/68c203e3-846c-41bc-bac7-443044638413" />
 <br>
   <em><strong>CapScript Pro, GUI Based YouTube Transcript Search Tool</strong></em>
 </p>
