@@ -40,6 +40,7 @@ This repository includes:
 - [CLI Usage](#cli-usage)
 - [CLI Examples](#cli-examples)
 - [Troubleshooting](#troubleshooting)
+- [License](#license)
 
 ## Overview
 
