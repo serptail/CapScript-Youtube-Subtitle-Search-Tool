@@ -10,7 +10,6 @@
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-
 <p align="center">
 <img width="1024" height="524" alt="capscript-png-noborder" src="https://github.com/user-attachments/assets/68c203e3-846c-41bc-bac7-443044638413" />
 <br>
