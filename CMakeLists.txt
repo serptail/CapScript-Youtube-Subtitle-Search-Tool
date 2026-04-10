@@ -202,7 +202,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     APP_NAME="${PROJECT_NAME}"
     ORG_NAME="serptail"
     UPDATE_REPO_OWNER="serptail"
-    UPDATE_REPO_NAME="CapScript-Test"
+    UPDATE_REPO_NAME="CapScript-Youtube-Subtitle-Search-Tool"
 )
 
 add_executable(CapScriptUpdater WIN32
