@@ -100,78 +100,32 @@ jobs:
           $ErrorActionPreference = 'Stop'
           cmake --build build --config ${{ env.BUILD_TYPE }}
 
-      - name: Install
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $installDir = Join-Path "${{ github.workspace }}" "build\install"
-          New-Item -ItemType Directory -Path $installDir -Force | Out-Null
-          cmake --install build --config ${{ env.BUILD_TYPE }} --prefix "$installDir"
-          $items = Get-ChildItem -Recurse $installDir
-          if (-not $items) { Write-Error "Install directory is empty — check install() rules in CMakeLists.txt"; exit 1 }
-          Write-Host "Install tree:"; $items | ForEach-Object { Write-Host $_.FullName }
-
-      - name: Copy Python bundle to install tree
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $buildExe = Get-ChildItem -Path "build" -Filter "CapScriptPro.exe" -Recurse |
-                      Where-Object { $_.FullName -notlike "*install*" } |
-                      Select-Object -First 1
-          if (-not $buildExe) { Write-Error "CapScriptPro.exe not found in build output"; exit 1 }
-          $buildDir = $buildExe.DirectoryName
-          $installDir = Join-Path "${{ github.workspace }}" "build\install"
-          $srcPython = Join-Path $buildDir "python"
-          $dstPython = Join-Path $installDir "python"
-          if (Test-Path $srcPython) {
-            Write-Host "Copying bundled Python from $srcPython to $dstPython"
-            Copy-Item -Path $srcPython -Destination $dstPython -Recurse -Force
-          } else {
-            Write-Warning "No python bundle found at $srcPython — skipping"
-          }
-
       - name: Deploy Qt runtime
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $exe = Get-ChildItem -Path "build\install" -Filter "CapScriptPro.exe" -Recurse | Select-Object -First 1
-          if (-not $exe) { Write-Error "CapScriptPro.exe not found in install tree"; exit 1 }
+          $exe = Get-ChildItem -Path "build" -Filter "CapScriptPro.exe" -Recurse | Select-Object -First 1
+          if (-not $exe) { Write-Error "CapScriptPro.exe not found"; exit 1 }
           $windeployqt = Join-Path $env:QT_ROOT_DIR "bin\windeployqt.exe"
           if (-not (Test-Path $windeployqt)) { Write-Error "windeployqt not found at $windeployqt"; exit 1 }
           & $windeployqt $exe.FullName --no-translations --no-system-d3d-compiler --no-opengl-sw
 
-      - name: Create build archive
+      - name: Stage build output
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $ver = "${{ steps.version.outputs.VERSION }}"
-          $buildExe = Get-ChildItem -Path "build" -Filter "CapScriptPro.exe" -Recurse |
-                      Where-Object { $_.FullName -notlike "*install*" } |
-                      Select-Object -First 1
-          if (-not $buildExe) { Write-Error "CapScriptPro.exe not found in build output"; exit 1 }
-          $buildDir = $buildExe.DirectoryName
-          Compress-Archive -Path "$buildDir\*" -DestinationPath "CapScriptPro-Windows-x64-$ver-build.zip"
+          $exe = Get-ChildItem -Path "build" -Filter "CapScriptPro.exe" -Recurse | Select-Object -First 1
+          if (-not $exe) { Write-Error "CapScriptPro.exe not found"; exit 1 }
+          $buildDir = $exe.DirectoryName
+          New-Item -ItemType Directory -Path "staging" -Force | Out-Null
+          Copy-Item -Path "$buildDir\*" -Destination "staging\" -Recurse -Force
+          Write-Host "Staged files:"; Get-ChildItem -Recurse "staging" | ForEach-Object { Write-Host $_.FullName }
 
-      - name: Create installed archive
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $ver = "${{ steps.version.outputs.VERSION }}"
-          $installDir = Join-Path "${{ github.workspace }}" "build\install"
-          if (-not (Test-Path $installDir)) { Write-Error "Install directory not found: $installDir"; exit 1 }
-          Compress-Archive -Path "$installDir\*" -DestinationPath "CapScriptPro-Windows-x64-$ver-installed.zip"
-
-      - name: Upload build artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CapScriptPro-Windows-x64-${{ steps.version.outputs.VERSION }}-build
-          path: CapScriptPro-Windows-x64-${{ steps.version.outputs.VERSION }}-build.zip
-
-      - name: Upload install artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: CapScriptPro-Windows-x64-${{ steps.version.outputs.VERSION }}-installed
-          path: CapScriptPro-Windows-x64-${{ steps.version.outputs.VERSION }}-installed.zip
+          name: CapScriptPro-Windows-x64-${{ steps.version.outputs.VERSION }}
+          path: staging/
 
   release:
     needs: [build-windows]
@@ -186,13 +140,17 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          merge-multiple: true
+          name: CapScriptPro-Windows-x64-${{ steps.version.outputs.VERSION }}
+          path: release-contents
+
+      - name: Create release zip
+        run: |
+          cd release-contents
+          zip -r "../CapScriptPro-Windows-x64-${{ steps.version.outputs.VERSION }}.zip" .
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           draft: true
           generate_release_notes: true
-          files: |
-            CapScriptPro-Windows-x64-${{ steps.version.outputs.VERSION }}-build.zip
-            CapScriptPro-Windows-x64-${{ steps.version.outputs.VERSION }}-installed.zip
+          files: CapScriptPro-Windows-x64-${{ steps.version.outputs.VERSION }}.zip

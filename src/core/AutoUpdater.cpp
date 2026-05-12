@@ -115,32 +115,29 @@ bool AutoUpdater::isVersionNewer(const QString &candidate,
 
 AutoUpdater::AssetInfo
 AutoUpdater::pickBestAsset(const QJsonArray &assets) const {
-  const QString platform = normalisedPlatformToken();
+    const QString platform = normalisedPlatformToken();
 
-  AssetInfo firstZip;
+    AssetInfo firstZip;
 
-  for (const auto &value : assets) {
-    const QJsonObject asset = value.toObject();
-    const QString name = asset.value("name").toString();
-    const QString url = asset.value("browser_download_url").toString();
-    const QString lowerName = name.toLower();
+    for (const auto &value : assets) {
+        const QJsonObject asset = value.toObject();
+        const QString name = asset.value("name").toString();
+        const QString url  = asset.value("browser_download_url").toString();
+        const QString lowerName = name.toLower();
 
-    if (!lowerName.endsWith("installed.zip") || url.isEmpty())
-      continue;
+        if (!lowerName.endsWith(".zip") || url.isEmpty())
+            continue;
 
-    if (firstZip.name.isEmpty()) {
-      firstZip.name = name;
-      firstZip.downloadUrl = url;
+        if (firstZip.name.isEmpty()) {
+            firstZip.name        = name;
+            firstZip.downloadUrl = url;
+        }
+
+        if (lowerName.contains(platform))
+            return {name, url};
     }
 
-    const bool looksPlatformSpecific =
-        lowerName.contains(platform) || lowerName.contains("installed");
-
-    if (looksPlatformSpecific && lowerName.contains(platform))
-      return {name, url};
-  }
-
-  return firstZip;
+    return firstZip;
 }
 
 void AutoUpdater::checkForUpdates(bool silentNoUpdate) {
