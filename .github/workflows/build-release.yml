@@ -95,7 +95,9 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "Installing into build/install"
-          cmake --install build --config ${{ env.BUILD_TYPE }} --prefix "${{ github.workspace }}\build\install"
+          $installDir = Join-Path "${{ github.workspace }}" "build\install"
+          New-Item -ItemType Directory -Path $installDir -Force | Out-Null
+          cmake --install build --config ${{ env.BUILD_TYPE }} --prefix "$installDir"
 
       - name: Deploy Qt runtime (installed tree)
         shell: pwsh
@@ -103,7 +105,7 @@ jobs:
           # Prefer the installed executable tree when deploying runtime
           $exe = Get-ChildItem -Path "build\install" -Filter "CapScriptPro.exe" -Recurse | Select-Object -First 1
           if (-not $exe) {
-            # fallback to build output if install didn't place exe where expected
+            Write-Host "CapScriptPro.exe not found in install tree. Fallback to build output."
             $exe = Get-ChildItem -Path "build" -Filter "CapScriptPro.exe" -Recurse | Select-Object -First 1
           }
           if (-not $exe) { Write-Error "CapScriptPro.exe not found"; exit 1 }
