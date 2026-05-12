@@ -2,7 +2,7 @@ cmake-build-*/
 out/
 build-release/
 release/
-build-release/
+release-build/
 
 .vs/
 .vscode/
