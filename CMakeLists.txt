@@ -299,6 +299,16 @@ if(WIN32 AND Qt6WebView_FOUND AND Qt6QuickWidgets_FOUND AND Qt6WebViewQuick_FOUN
     endif()
 endif()
 
+install(TARGETS ${PROJECT_NAME} CapScriptUpdater
+    RUNTIME DESTINATION .
+)
 
+if(WIN32 AND CAPSCRIPT_WEBVIEW2_AVAILABLE AND EXISTS "${_WV2_LOADER_DLL}")
+    install(FILES "${_WV2_LOADER_DLL}" DESTINATION .)
+endif()
+
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/python/"
+    DESTINATION python
+)
 
 

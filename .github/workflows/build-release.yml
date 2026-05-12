@@ -26,6 +26,7 @@ jobs:
         id: version
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           $tag = "${{ github.ref_name }}"
           $ver = if ($tag -match '^v(.+)$') { $Matches[1] } else { "0.0.0-dev" }
           echo "VERSION=$ver" >> $env:GITHUB_OUTPUT
@@ -55,6 +56,7 @@ jobs:
       - name: Download WebView2 SDK
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           nuget install Microsoft.Web.WebView2 -OutputDirectory wv2_pkg
           $wv2Dir = Get-ChildItem -Path wv2_pkg -Filter "Microsoft.Web.WebView2.*" -Directory | Select-Object -First 1
           $destBase = "third_party/webview2/sdk/build/native"
@@ -66,6 +68,7 @@ jobs:
       - name: Configure CMake
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           $qtBase = (Get-Item "$env:QT_ROOT_DIR").Parent.Parent.FullName
           $toolsDir = Join-Path $qtBase "Tools"
 
@@ -93,40 +96,66 @@ jobs:
 
       - name: Build
         shell: pwsh
-        run: cmake --build build --config ${{ env.BUILD_TYPE }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          cmake --build build --config ${{ env.BUILD_TYPE }}
 
       - name: Install
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           $installDir = Join-Path "${{ github.workspace }}" "build\install"
           New-Item -ItemType Directory -Path $installDir -Force | Out-Null
           cmake --install build --config ${{ env.BUILD_TYPE }} --prefix "$installDir"
+          $items = Get-ChildItem -Recurse $installDir
+          if (-not $items) { Write-Error "Install directory is empty — check install() rules in CMakeLists.txt"; exit 1 }
+          Write-Host "Install tree:"; $items | ForEach-Object { Write-Host $_.FullName }
+
+      - name: Copy Python bundle to install tree
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $buildExe = Get-ChildItem -Path "build" -Filter "CapScriptPro.exe" -Recurse |
+                      Where-Object { $_.FullName -notlike "*install*" } |
+                      Select-Object -First 1
+          if (-not $buildExe) { Write-Error "CapScriptPro.exe not found in build output"; exit 1 }
+          $buildDir = $buildExe.DirectoryName
+          $installDir = Join-Path "${{ github.workspace }}" "build\install"
+          $srcPython = Join-Path $buildDir "python"
+          $dstPython = Join-Path $installDir "python"
+          if (Test-Path $srcPython) {
+            Write-Host "Copying bundled Python from $srcPython to $dstPython"
+            Copy-Item -Path $srcPython -Destination $dstPython -Recurse -Force
+          } else {
+            Write-Warning "No python bundle found at $srcPython — skipping"
+          }
 
       - name: Deploy Qt runtime
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           $exe = Get-ChildItem -Path "build\install" -Filter "CapScriptPro.exe" -Recurse | Select-Object -First 1
-          if (-not $exe) {
-            $exe = Get-ChildItem -Path "build" -Filter "CapScriptPro.exe" -Recurse | Select-Object -First 1
-          }
-          if (-not $exe) { Write-Error "CapScriptPro.exe not found"; exit 1 }
-
+          if (-not $exe) { Write-Error "CapScriptPro.exe not found in install tree"; exit 1 }
           $windeployqt = Join-Path $env:QT_ROOT_DIR "bin\windeployqt.exe"
           if (-not (Test-Path $windeployqt)) { Write-Error "windeployqt not found at $windeployqt"; exit 1 }
-
           & $windeployqt $exe.FullName --no-translations --no-system-d3d-compiler --no-opengl-sw
 
       - name: Create build archive
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           $ver = "${{ steps.version.outputs.VERSION }}"
-          $exePath = (Get-ChildItem -Path "build" -Filter "CapScriptPro.exe" -Recurse | Select-Object -First 1).FullName
-          $exeDir = [System.IO.Path]::GetDirectoryName($exePath)
-          Compress-Archive -Path "$exeDir\*" -DestinationPath "CapScriptPro-Windows-x64-$ver-build.zip"
+          $buildExe = Get-ChildItem -Path "build" -Filter "CapScriptPro.exe" -Recurse |
+                      Where-Object { $_.FullName -notlike "*install*" } |
+                      Select-Object -First 1
+          if (-not $buildExe) { Write-Error "CapScriptPro.exe not found in build output"; exit 1 }
+          $buildDir = $buildExe.DirectoryName
+          Compress-Archive -Path "$buildDir\*" -DestinationPath "CapScriptPro-Windows-x64-$ver-build.zip"
 
       - name: Create installed archive
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           $ver = "${{ steps.version.outputs.VERSION }}"
           $installDir = Join-Path "${{ github.workspace }}" "build\install"
           if (-not (Test-Path $installDir)) { Write-Error "Install directory not found: $installDir"; exit 1 }
