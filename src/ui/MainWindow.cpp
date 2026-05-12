@@ -1,3 +1,38 @@
+#include "MainWindow.h"
+#include "../core/AutoUpdater.h"
+#include "../core/Settings.h"
+#include "TitleBar.h"
+#include "pages/AboutPage.h"
+#include "pages/ClipDownloaderPage.h"
+#include "pages/ListCreatorPage.h"
+#include "pages/RendererPage.h"
+#include "pages/SearchPage.h"
+#include "pages/ViewerPage.h"
+#include "styles/ThemeManager.h"
+#include "widgets/SupportPopup.h"
+#include <QApplication>
+#include <QCloseEvent>
+#include <QDateTime>
+#include <QFileDialog>
+#include <QGraphicsDropShadowEffect>
+#include <QGuiApplication>
+#include <QKeySequence>
+#include <QMessageBox>
+#include <QPainterPath>
+#include <QPixmap>
+#include <QScreen>
+#include <QShortcut>
+#include <QTimer>
+#include <QVBoxLayout>
+#include <QWindow>
+#include <QPainter>
+
+#ifdef Q_OS_WIN
+#include <dwmapi.h>
+#include <windows.h>
+#include <windowsx.h>
+#endif
+
 struct ScreenshotContext {
   QWidget *mainWindow;
   QPainter *painter;
