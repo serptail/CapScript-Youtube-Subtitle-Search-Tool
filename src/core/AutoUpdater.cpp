@@ -125,7 +125,7 @@ AutoUpdater::pickBestAsset(const QJsonArray &assets) const {
     const QString url = asset.value("browser_download_url").toString();
     const QString lowerName = name.toLower();
 
-    if (!lowerName.endsWith(".zip") || url.isEmpty())
+    if (!lowerName.endsWith("installed.zip") || url.isEmpty())
       continue;
 
     if (firstZip.name.isEmpty()) {
@@ -134,7 +134,7 @@ AutoUpdater::pickBestAsset(const QJsonArray &assets) const {
     }
 
     const bool looksPlatformSpecific =
-        lowerName.contains(platform) || lowerName.contains("windows");
+        lowerName.contains(platform) || lowerName.contains("installed");
 
     if (looksPlatformSpecific && lowerName.contains(platform))
       return {name, url};

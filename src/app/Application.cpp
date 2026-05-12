@@ -17,7 +17,7 @@ Application::Application(int &argc, char **argv) : QApplication(argc, argv) {
 #ifdef APP_VERSION
   setApplicationVersion(QStringLiteral(APP_VERSION));
 #else
-  setApplicationVersion("2.0.0");
+  setApplicationVersion("2.5.0");
 #endif
   setStyle("Fusion");
 

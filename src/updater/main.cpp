@@ -194,7 +194,7 @@ QString argumentValue(const QStringList &args, const QString &key) {
 int main(int argc, char *argv[]) {
   QCoreApplication app(argc, argv);
   app.setApplicationName("CapScript Updater");
-  app.setApplicationVersion("2.0.0");
+  app.setApplicationVersion("2.5.0");
 
   const QStringList args = app.arguments();
   const QString zipPath = argumentValue(args, "--zip");

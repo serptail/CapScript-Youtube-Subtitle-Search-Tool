@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required(VERSION 3.21)
 
 project(CapScriptPro
-    VERSION 2.0.0
+    VERSION 2.5.0
     DESCRIPTION "YouTube Transcript Search Tool - C++ Qt Edition"
     LANGUAGES CXX
 )
