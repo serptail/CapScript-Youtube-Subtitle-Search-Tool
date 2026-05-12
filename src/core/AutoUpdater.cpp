@@ -21,7 +21,7 @@
 
 namespace {
 constexpr const char *kRepoOwner = "serptail";
-constexpr const char *kRepoName = "CapScript-Test";
+constexpr const char *kRepoName = "CapScript-Youtube-Subtitle-Search-Tool";
 
 constexpr const char *kPendingUpdateZipKey = "Updates/PendingZip";
 constexpr const char *kPendingUpdateVersionKey = "Updates/PendingVersion";

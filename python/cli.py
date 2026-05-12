@@ -138,8 +138,19 @@ def _run_search(params: dict) -> dict:
         def _cb(pct: int, msg: str) -> None:
             state.push(pct, msg)
 
-        raw = eng.search_transcripts(json.dumps(params), progress_callback=_cb)
-        result_box.append(json.loads(raw))
+        try:
+            raw = eng.search_transcripts(json.dumps(params), progress_callback=_cb)
+            parsed = json.loads(raw)
+            if not isinstance(parsed, dict):
+                raise ValueError("Engine response is not a JSON object")
+            result_box.append(parsed)
+        except Exception as exc:
+            result_box.append({
+                "status": "error",
+                "error": f"Engine execution failed: {exc}",
+                "match_count": 0,
+                "results": [],
+            })
 
     worker = threading.Thread(target=_worker, daemon=True)
     worker.start()
@@ -183,9 +194,9 @@ Examples
                 --video-ids "https://youtu.be/dQw4w9WgXcQ,abc123XYZ00" \\
                 --keyword "never gonna"
 
-  # Save API key once, then omit it in future runs
-  python cli.py --api-key AIza... --save-api-key --search-type video \\
-                --video-ids dQw4w9WgXcQ --keyword test
+    # Force legacy substring behavior (matches within larger words)
+    python cli.py --search-type video --video-ids abc123 \\
+                                --keyword "how" --match-mode contains
 
   # Use a Webshare proxy and a cookies file
   python cli.py --search-type channel --channel "UCxxxxxx" --keyword "AI" \\
@@ -195,16 +206,12 @@ Examples
   # Persist proxy settings and run later without repeating them
   python cli.py --proxy-type generic --proxy-url "http://1.2.3.4:8080" --save-proxy
   python cli.py --search-type video --video-ids abc123 --keyword test
+
+  # Use a custom output filename
+  python cli.py --search-type video --video-ids abc123 --keyword test \\
+                --output-file my_hits.txt
 """,
     )
-
-    key_g = p.add_argument_group("API key")
-    key_g.add_argument("--api-key", metavar="KEY",
-        help="YouTube Data API v3 key. Overrides the saved key.")
-    key_g.add_argument("--save-api-key", action="store_true",
-        help="Encrypt and save --api-key to preferences.ini for future runs.")
-    key_g.add_argument("--validate-api-key", action="store_true",
-        help="Validate the API key with a live call and exit.")
 
     tg = p.add_argument_group("Search target (one required)")
     tg.add_argument("--search-type", choices=["channel", "video"],
@@ -218,11 +225,16 @@ Examples
 
     sg = p.add_argument_group("Search options")
     sg.add_argument("--keyword", metavar="WORD",
-        help="Keyword or phrase to search for in captions (whole-word match).")
+        help="Keyword or phrase to search for in captions.")
+    sg.add_argument("--match-mode", metavar="MODE", default="smart",
+        choices=["smart", "exact_phrase", "contains"],
+        help="Search behavior: smart (default), exact_phrase, contains.")
     sg.add_argument("--language", metavar="LANG", default="en",
         help="BCP-47 language code for captions (default: en).")
     sg.add_argument("--output-dir", metavar="DIR", default="transcripts",
         help="Directory for result .txt files (default: transcripts).")
+    sg.add_argument("--output-file", metavar="FILE",
+        help="Optional output filename (example: results.txt).")
 
     pg = p.add_argument_group("Proxy settings")
     pg.add_argument("--proxy-type", choices=["none", "webshare", "generic"])
@@ -237,6 +249,13 @@ Examples
     ag = p.add_argument_group("Authentication")
     ag.add_argument("--cookies", metavar="FILE",
         help="Path to a Netscape/Mozilla cookies.txt file.")
+    ag.add_argument("--cookies-from-browser", metavar="BROWSER",
+        help="Name of the browser to load cookies from (e.g., chrome, firefox, edge, vivaldi, brave).")
+
+    # Hidden legacy flags accepted for backward compatibility.
+    p.add_argument("--api-key", default="", help=argparse.SUPPRESS)
+    p.add_argument("--save-api-key", action="store_true", help=argparse.SUPPRESS)
+    p.add_argument("--validate-api-key", action="store_true", help=argparse.SUPPRESS)
 
     return p
 
@@ -251,26 +270,12 @@ def main() -> None:
         _ok("Proxy settings cleared.")
         return
 
-    api_key = args.api_key or eng.load_api_key()
-    if not api_key:
-        parser.error("No API key found. Provide --api-key or run once with --save-api-key.")
-
-    if args.validate_api_key:
-        _info("contacting YouTube API …")
-        if eng.validate_api_key(api_key):
-            _ok("API key is valid.")
-        else:
-            _err("API key is invalid or quota exceeded.")
-            sys.exit(1)
-        return
-
+    if args.api_key:
+        _warn("Legacy --api-key is deprecated and ignored in yt-dlp mode.")
     if args.save_api_key:
-        if not args.api_key:
-            parser.error("--save-api-key requires --api-key.")
-        if eng.save_api_key(api_key):
-            _ok(f"API key saved → [accent]{eng.PREFERENCES_FILE_PATH}[/accent]")
-        else:
-            _err("Failed to save API key.")
+        _warn("Legacy --save-api-key is deprecated and ignored.")
+    if args.validate_api_key:
+        _warn("Legacy --validate-api-key is deprecated and ignored.")
 
     saved_proxy    = json.loads(eng.load_proxy_settings())
     proxy_type     = args.proxy_type     or saved_proxy.get("type",     "none")
@@ -286,8 +291,12 @@ def main() -> None:
             proxy_type or "none", proxy_username, proxy_password, proxy_url
         )
         _ok("Proxy settings saved.")
+        if not args.search_type:
+            return
 
     if not args.search_type:
+        if args.save_api_key or args.validate_api_key:
+            return
         parser.error("--search-type is required for a search.")
     if not args.keyword:
         parser.error("--keyword is required for a search.")
@@ -300,6 +309,7 @@ def main() -> None:
 
     console.print(
         f"  [muted]keyword[/muted]  [color(196)]{args.keyword}[/color(196)]"
+        f"   [muted]match[/muted] [dim]{args.match_mode}[/dim]"
         f"   [muted]mode[/muted] [color(196)]{args.search_type}[/color(196)]"
         f"   [muted]lang[/muted] [dim]{args.language}[/dim]"
         f"   [muted]proxy[/muted] [dim]{proxy_type or 'none'}[/dim]"
@@ -307,15 +317,18 @@ def main() -> None:
     console.print()
 
     params = {
-        "api_key":         api_key,
+        "api_key":         "",
         "search_type":     args.search_type,
         "keyword":         args.keyword,
+        "match_mode":      args.match_mode,
         "language":        args.language,
         "output_dir":      args.output_dir,
+        "output_filename": args.output_file or None,
         "channel_id":      args.channel_id or "",
         "max_results":     args.max_results,
         "video_ids_input": args.video_ids or "",
         "cookies_file":    args.cookies or None,
+        "cookies_from_browser": args.cookies_from_browser or None,
         "proxy_type":      proxy_type,
         "proxy_username":  proxy_username,
         "proxy_password":  proxy_password,
@@ -324,10 +337,34 @@ def main() -> None:
 
     result = _run_search(params)
 
-    match_count = result.get("match_count", 0)
+    status = str(result.get("status") or "ok").strip().lower()
+    if status not in {"ok", "error", "cancelled"}:
+        _warn(f"Unexpected engine status '{status}'. Treating as error.")
+        status = "error"
+
+    match_count = int(result.get("match_count", 0) or 0)
     output_file = result.get("output_file")
+    error_msg = str(result.get("error") or "Search failed")
 
     console.print()
+    if status == "error":
+        _err(error_msg)
+        console.print()
+        sys.exit(1)
+
+    if status == "cancelled":
+        if match_count > 0:
+            _warn(
+                f"Search cancelled with [bold]{match_count}[/bold] partial "
+                f"match{'es' if match_count != 1 else ''}."
+            )
+            if output_file:
+                _info(f"partial results saved → [accent]{output_file}[/accent]")
+        else:
+            _warn("Search cancelled.")
+        console.print()
+        sys.exit(130)
+
     if match_count > 0:
         _ok(f"[bold]{match_count}[/bold] match{'es' if match_count != 1 else ''} found.")
         if output_file:

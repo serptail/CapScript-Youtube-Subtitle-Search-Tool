@@ -10,6 +10,22 @@
 
 namespace CapScript {
 
+namespace {
+
+PyObject *toPyString(const QString &value) {
+  return PyUnicode_FromString(value.toUtf8().constData());
+}
+
+PyObject *toPyOptionalString(const QString &value) {
+  if (value.isEmpty()) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  return toPyString(value);
+}
+
+} // namespace
+
 PythonBridge &PythonBridge::instance() {
   static PythonBridge s_instance;
   return s_instance;
@@ -157,6 +173,8 @@ void PythonBridge::shutdown() {
 }
 
 PyObject *PythonBridge::callFunction(const char *funcName, PyObject *args) {
+  std::lock_guard<std::mutex> lock(m_mutex);
+
   if (!m_module)
     return nullptr;
 
@@ -173,7 +191,26 @@ PyObject *PythonBridge::callFunction(const char *funcName, PyObject *args) {
   Py_DECREF(func);
 
   if (!result) {
-    qWarning() << "[PythonBridge] Call failed:" << funcName;
+    QString errorMsg = QStringLiteral("Python call failed: %1")
+                           .arg(QString::fromUtf8(funcName));
+    if (PyErr_Occurred()) {
+      PyObject *ptype = nullptr;
+      PyObject *pvalue = nullptr;
+      PyObject *ptraceback = nullptr;
+      PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+      PyErr_NormalizeException(&ptype, &pvalue, &ptraceback);
+      if (pvalue) {
+        PyObject *strObj = PyObject_Str(pvalue);
+        if (strObj) {
+          errorMsg += QStringLiteral(" - %1").arg(pyStringToQString(strObj));
+          Py_DECREF(strObj);
+        }
+      }
+      PyErr_Restore(ptype, pvalue, ptraceback);
+    }
+
+    qWarning() << "[PythonBridge]" << errorMsg;
+    emit pythonError(errorMsg);
     PyErr_Print();
   }
   return result;
@@ -249,6 +286,12 @@ struct ProgressCallbackData {
   std::function<bool(int, const QString &)> fn;
 };
 
+static void destroyProgressCallbackData(PyObject *capsule) {
+  auto *data = static_cast<ProgressCallbackData *>(
+      PyCapsule_GetPointer(capsule, "progress_cb_data"));
+  delete data;
+}
+
 static PyObject *progressTrampoline(PyObject *self, PyObject *args) {
   (void)self;
   int percent = 0;
@@ -283,14 +326,13 @@ QString PythonBridge::searchTranscripts(
   QByteArray jsonBytes = doc.toJson(QJsonDocument::Compact);
   PyObject *pyJson = PyUnicode_FromString(jsonBytes.constData());
 
-  PyObject *pyCallback = Py_None;
-  Py_INCREF(Py_None);
-
-  ProgressCallbackData cbData{progressCb};
+  PyObject *pyCallback = nullptr;
 
   if (progressCb) {
 
-    PyObject *capsule = PyCapsule_New(&cbData, "progress_cb_data", nullptr);
+    auto *cbData = new ProgressCallbackData{progressCb};
+    PyObject *capsule =
+        PyCapsule_New(cbData, "progress_cb_data", destroyProgressCallbackData);
 
     pyCallback = PyCFunction_New(&progressMethodDef, capsule);
     Py_DECREF(capsule);
@@ -301,6 +343,9 @@ QString PythonBridge::searchTranscripts(
       pyCallback = Py_None;
       Py_INCREF(Py_None);
     }
+  } else {
+    pyCallback = Py_None;
+    Py_INCREF(Py_None);
   }
 
   PyObject *args = PyTuple_Pack(2, pyJson, pyCallback);
@@ -308,8 +353,7 @@ QString PythonBridge::searchTranscripts(
 
   Py_XDECREF(args);
   Py_XDECREF(pyJson);
-  if (pyCallback != Py_None)
-    Py_XDECREF(pyCallback);
+  Py_XDECREF(pyCallback);
 
   QString resultStr = pyStringToQString(result);
   Py_XDECREF(result);
@@ -317,11 +361,23 @@ QString PythonBridge::searchTranscripts(
 }
 
 QString PythonBridge::resolveChannelId(const QString &apiKey,
-                                       const QString &channelInput) {
+                                       const QString &channelInput,
+                                       const QString &cookiesFile,
+                                       const QString &cookiesFromBrowser,
+                                       const QString &proxyType,
+                                       const QString &proxyUsername,
+                                       const QString &proxyPassword,
+                                       const QString &proxyUrl) {
   GILLock gil;
-  PyObject *args =
-      PyTuple_Pack(2, PyUnicode_FromString(apiKey.toUtf8().constData()),
-                   PyUnicode_FromString(channelInput.toUtf8().constData()));
+  PyObject *args = PyTuple_New(8);
+  PyTuple_SET_ITEM(args, 0, toPyString(apiKey));
+  PyTuple_SET_ITEM(args, 1, toPyString(channelInput));
+  PyTuple_SET_ITEM(args, 2, toPyOptionalString(cookiesFile));
+  PyTuple_SET_ITEM(args, 3, toPyOptionalString(cookiesFromBrowser));
+  PyTuple_SET_ITEM(args, 4, toPyOptionalString(proxyType));
+  PyTuple_SET_ITEM(args, 5, toPyOptionalString(proxyUsername));
+  PyTuple_SET_ITEM(args, 6, toPyOptionalString(proxyPassword));
+  PyTuple_SET_ITEM(args, 7, toPyOptionalString(proxyUrl));
   PyObject *result = callFunction("resolve_channel_id", args);
   Py_XDECREF(args);
 
@@ -332,13 +388,25 @@ QString PythonBridge::resolveChannelId(const QString &apiKey,
 
 QJsonArray PythonBridge::getChannelVideos(const QString &apiKey,
                                           const QString &channelId,
-                                          const QString &lang, int maxResults) {
+                                          const QString &lang, int maxResults,
+                                          const QString &cookiesFile,
+                                          const QString &cookiesFromBrowser,
+                                          const QString &proxyType,
+                                          const QString &proxyUsername,
+                                          const QString &proxyPassword,
+                                          const QString &proxyUrl) {
   GILLock gil;
-  PyObject *args =
-      PyTuple_Pack(4, PyUnicode_FromString(apiKey.toUtf8().constData()),
-                   PyUnicode_FromString(channelId.toUtf8().constData()),
-                   PyUnicode_FromString(lang.toUtf8().constData()),
-                   PyLong_FromLong(maxResults));
+  PyObject *args = PyTuple_New(10);
+  PyTuple_SET_ITEM(args, 0, toPyString(apiKey));
+  PyTuple_SET_ITEM(args, 1, toPyString(channelId));
+  PyTuple_SET_ITEM(args, 2, toPyString(lang));
+  PyTuple_SET_ITEM(args, 3, PyLong_FromLong(maxResults));
+  PyTuple_SET_ITEM(args, 4, toPyOptionalString(cookiesFile));
+  PyTuple_SET_ITEM(args, 5, toPyOptionalString(cookiesFromBrowser));
+  PyTuple_SET_ITEM(args, 6, toPyOptionalString(proxyType));
+  PyTuple_SET_ITEM(args, 7, toPyOptionalString(proxyUsername));
+  PyTuple_SET_ITEM(args, 8, toPyOptionalString(proxyPassword));
+  PyTuple_SET_ITEM(args, 9, toPyOptionalString(proxyUrl));
   PyObject *result = callFunction("get_channel_videos", args);
   Py_XDECREF(args);
 
@@ -407,13 +475,25 @@ QJsonObject PythonBridge::getVideoDetails(const QString &apiKey,
 QJsonArray PythonBridge::fetchVideosByChannelDate(const QString &apiKey,
                                                   const QString &channelId,
                                                   const QString &startIso,
-                                                  const QString &endIso) {
+                                                  const QString &endIso,
+                                                  const QString &cookiesFile,
+                                                  const QString &cookiesFromBrowser,
+                                                  const QString &proxyType,
+                                                  const QString &proxyUsername,
+                                                  const QString &proxyPassword,
+                                                  const QString &proxyUrl) {
   GILLock gil;
-  PyObject *args =
-      PyTuple_Pack(4, PyUnicode_FromString(apiKey.toUtf8().constData()),
-                   PyUnicode_FromString(channelId.toUtf8().constData()),
-                   PyUnicode_FromString(startIso.toUtf8().constData()),
-                   PyUnicode_FromString(endIso.toUtf8().constData()));
+  PyObject *args = PyTuple_New(10);
+  PyTuple_SET_ITEM(args, 0, toPyString(apiKey));
+  PyTuple_SET_ITEM(args, 1, toPyString(channelId));
+  PyTuple_SET_ITEM(args, 2, toPyString(startIso));
+  PyTuple_SET_ITEM(args, 3, toPyString(endIso));
+  PyTuple_SET_ITEM(args, 4, toPyOptionalString(cookiesFile));
+  PyTuple_SET_ITEM(args, 5, toPyOptionalString(cookiesFromBrowser));
+  PyTuple_SET_ITEM(args, 6, toPyOptionalString(proxyType));
+  PyTuple_SET_ITEM(args, 7, toPyOptionalString(proxyUsername));
+  PyTuple_SET_ITEM(args, 8, toPyOptionalString(proxyPassword));
+  PyTuple_SET_ITEM(args, 9, toPyOptionalString(proxyUrl));
   PyObject *result = callFunction("fetch_videos_by_channel_date", args);
   Py_XDECREF(args);
 
@@ -442,23 +522,26 @@ QJsonArray PythonBridge::searchVideosByKeyword(const QString &apiKey,
                                                const QString &channelId,
                                                const QString &keyword,
                                                const QString &startIso,
-                                               const QString &endIso) {
+                                               const QString &endIso,
+                                               const QString &cookiesFile,
+                                               const QString &cookiesFromBrowser,
+                                               const QString &proxyType,
+                                               const QString &proxyUsername,
+                                               const QString &proxyPassword,
+                                               const QString &proxyUrl) {
   GILLock gil;
-  PyObject *pyStart = startIso.isEmpty()
-                          ? Py_None
-                          : PyUnicode_FromString(startIso.toUtf8().constData());
-  PyObject *pyEnd = endIso.isEmpty()
-                        ? Py_None
-                        : PyUnicode_FromString(endIso.toUtf8().constData());
-  if (startIso.isEmpty())
-    Py_INCREF(Py_None);
-  if (endIso.isEmpty())
-    Py_INCREF(Py_None);
-
-  PyObject *args = PyTuple_Pack(
-      5, PyUnicode_FromString(apiKey.toUtf8().constData()),
-      PyUnicode_FromString(channelId.toUtf8().constData()),
-      PyUnicode_FromString(keyword.toUtf8().constData()), pyStart, pyEnd);
+  PyObject *args = PyTuple_New(11);
+  PyTuple_SET_ITEM(args, 0, toPyString(apiKey));
+  PyTuple_SET_ITEM(args, 1, toPyString(channelId));
+  PyTuple_SET_ITEM(args, 2, toPyString(keyword));
+  PyTuple_SET_ITEM(args, 3, toPyOptionalString(startIso));
+  PyTuple_SET_ITEM(args, 4, toPyOptionalString(endIso));
+  PyTuple_SET_ITEM(args, 5, toPyOptionalString(cookiesFile));
+  PyTuple_SET_ITEM(args, 6, toPyOptionalString(cookiesFromBrowser));
+  PyTuple_SET_ITEM(args, 7, toPyOptionalString(proxyType));
+  PyTuple_SET_ITEM(args, 8, toPyOptionalString(proxyUsername));
+  PyTuple_SET_ITEM(args, 9, toPyOptionalString(proxyPassword));
+  PyTuple_SET_ITEM(args, 10, toPyOptionalString(proxyUrl));
   PyObject *result = callFunction("search_videos_by_keyword", args);
   Py_XDECREF(args);
 

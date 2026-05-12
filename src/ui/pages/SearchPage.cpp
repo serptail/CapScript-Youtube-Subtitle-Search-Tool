@@ -1,15 +1,18 @@
 #include "SearchPage.h"
 #include "../../core/PythonBridge.h"
 #include "../../core/Settings.h"
+#include "../../core/ToolPaths.h"
 #include "../../workers/SearchWorker.h"
 #include "../widgets/FeedbackWidget.h"
 #include <QAction>
 #include <QApplication>
 #include <QButtonGroup>
 #include <QClipboard>
+#include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
 #include <QEvent>
+#include <QFile>
 #include <QFileDialog>
 #include <QGridLayout>
 #include <QGroupBox>
@@ -17,12 +20,20 @@
 #include <QIcon>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonParseError>
 #include <QLabel>
 #include <QMessageBox>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QProcess>
+#include <QProgressDialog>
 #include <QPropertyAnimation>
 #include <QRegularExpression>
 #include <QSplitter>
 #include <QStyle>
+#include <QTimer>
+#include <QUrl>
 #include <QVBoxLayout>
 #include <QVariantAnimation>
 
@@ -67,6 +78,94 @@ static QString extractChannelId(const QString &input) {
   return trimmed;
 }
 
+namespace {
+
+static QString formatBytes(qint64 bytes) {
+  if (bytes <= 0)
+    return QStringLiteral("unknown size");
+
+  const double kib = 1024.0;
+  const double mib = kib * 1024.0;
+  const double gib = mib * 1024.0;
+
+  if (bytes >= gib)
+    return QString::number(bytes / gib, 'f', 2) + " GB";
+  if (bytes >= mib)
+    return QString::number(bytes / mib, 'f', 2) + " MB";
+  if (bytes >= kib)
+    return QString::number(bytes / kib, 'f', 1) + " KB";
+  return QString::number(bytes) + " B";
+}
+
+static QString ytDlpDownloadUrl() {
+  return QStringLiteral(
+      "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe");
+}
+
+static QString localYtDlpPath() {
+  return ToolPaths::localYtdlp();
+}
+
+static QString normalizeYtDlpVersion(const QString &raw) {
+  QString v = raw.trimmed();
+  if (v.startsWith('v') || v.startsWith('V'))
+    v.remove(0, 1);
+  return v;
+}
+
+static int compareVersionStrings(const QString &lhsRaw, const QString &rhsRaw) {
+  const QString lhs = normalizeYtDlpVersion(lhsRaw);
+  const QString rhs = normalizeYtDlpVersion(rhsRaw);
+
+  const QStringList lParts = lhs.split('.', Qt::SkipEmptyParts);
+  const QStringList rParts = rhs.split('.', Qt::SkipEmptyParts);
+  const int n = qMax(lParts.size(), rParts.size());
+
+  for (int i = 0; i < n; ++i) {
+    const int l = i < lParts.size() ? lParts[i].toInt() : 0;
+    const int r = i < rParts.size() ? rParts[i].toInt() : 0;
+    if (l < r)
+      return -1;
+    if (l > r)
+      return 1;
+  }
+
+  return 0;
+}
+
+static QString latestYtDlpReleaseApiUrl() {
+  return QStringLiteral("https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest");
+}
+
+static void persistLocalYtDlpVersion(QWidget *owner, const QString &ytdlpPath,
+                                     QLabel *statusLabel = nullptr) {
+  auto *proc = new QProcess(owner);
+  proc->setProcessChannelMode(QProcess::MergedChannels);
+  proc->setStandardInputFile(QProcess::nullDevice());
+  proc->setProgram(ytdlpPath);
+  proc->setArguments({"--version"});
+#ifdef _WIN32
+  proc->setCreateProcessArgumentsModifier(
+      [](QProcess::CreateProcessArguments *a) { a->flags |= 0x08000000; });
+#endif
+  QObject::connect(
+      proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+      owner,
+      [proc, statusLabel](int exitCode, QProcess::ExitStatus) {
+        const QString version =
+            normalizeYtDlpVersion(QString::fromLocal8Bit(proc->readAll()).trimmed());
+        if (exitCode == 0 && !version.isEmpty()) {
+          Settings::setYtDlpVersionSaved(version);
+          if (statusLabel)
+            statusLabel->setText(QStringLiteral("yt-dlp downloaded (%1)").arg(version));
+        }
+        proc->deleteLater();
+      });
+  proc->start();
+}
+
+} // namespace
+
 void SearchPage::resizeEvent(QResizeEvent *e) {
   QWidget::resizeEvent(e);
   positionFeedbackBtn();
@@ -75,6 +174,10 @@ void SearchPage::resizeEvent(QResizeEvent *e) {
 void SearchPage::showEvent(QShowEvent *e) {
   QWidget::showEvent(e);
   positionFeedbackBtn();
+  if (!m_startupUpdateChecked) {
+    m_startupUpdateChecked = true;
+    QTimer::singleShot(0, this, &SearchPage::checkForYtDlpUpdate);
+  }
 }
 
 void SearchPage::positionFeedbackBtn() {
@@ -96,53 +199,6 @@ void SearchPage::setupUi() {
   auto *leftLayout = new QVBoxLayout(leftPanel);
   leftLayout->setContentsMargins(0, 0, 16, 0);
   leftLayout->setSpacing(6);
-
-  auto *apiGroup = new QGroupBox("API Key");
-  auto *apiLayout = new QHBoxLayout(apiGroup);
-  apiLayout->setContentsMargins(10, 10, 10, 10);
-  apiLayout->setSpacing(6);
-
-  m_apiKeyInput = new QLineEdit;
-  m_apiKeyInput->setPlaceholderText("Enter YouTube Data API v3 key...");
-  m_apiKeyInput->setEchoMode(QLineEdit::Password);
-
-  QAction *pasteAction = m_apiKeyInput->addAction(QIcon(":/icons/paste.svg"),
-                                                  QLineEdit::TrailingPosition);
-  pasteAction->setToolTip("Paste from clipboard");
-  connect(pasteAction, &QAction::triggered, this, &SearchPage::onPasteApiKey);
-
-  m_apiToggleBtn = new QPushButton;
-  m_apiToggleBtn->setObjectName("ghostBtn");
-  m_apiToggleBtn->setIcon(QIcon(":/icons/show.svg"));
-  m_apiToggleBtn->setIconSize(QSize(16, 16));
-  m_apiToggleBtn->setFixedSize(30, 28);
-  m_apiToggleBtn->setToolTip("Show/hide API key");
-  m_apiToggleBtn->setCursor(Qt::PointingHandCursor);
-
-  m_apiInfoBtn = new QPushButton;
-  m_apiInfoBtn->setObjectName("ghostBtn");
-  m_apiInfoBtn->setIcon(QIcon(":/icons/tooltip.svg"));
-  m_apiInfoBtn->setIconSize(QSize(16, 16));
-  m_apiInfoBtn->setFixedSize(30, 28);
-  m_apiInfoBtn->setCursor(Qt::PointingHandCursor);
-  m_apiInfoBtn->setToolTip("YouTube Data API v3 Key\n\n"
-                           "Get your free API key from Google Cloud:\n"
-                           "1. Go to Google Cloud Console\n"
-                           "2. Create a new project\n"
-                           "3. Enable YouTube Data API v3\n"
-                           "4. Create an API key credential\n"
-                           "5. Paste it here\n\n"
-                           "https://console.cloud.google.com");
-
-  apiLayout->addWidget(m_apiKeyInput, 1);
-  apiLayout->addWidget(m_apiToggleBtn);
-  apiLayout->addWidget(m_apiInfoBtn);
-
-  leftLayout->addWidget(apiGroup);
-
-  QString savedKey = PythonBridge::instance().loadApiKey();
-  if (!savedKey.isEmpty())
-    m_apiKeyInput->setText(savedKey);
 
   auto *modeGroup = new QGroupBox("Search Mode");
   auto *modeLayout = new QVBoxLayout(modeGroup);
@@ -252,6 +308,21 @@ void SearchPage::setupUi() {
   m_modeStack->addWidget(channelPanel);
 
   modeLayout->addWidget(m_modeStack);
+
+  auto *matchRow = new QHBoxLayout;
+  matchRow->addWidget(new QLabel("Match Mode:"));
+  m_matchModeCombo = new QComboBox;
+  m_matchModeCombo->addItem("Smart (recommended)", "smart");
+  m_matchModeCombo->addItem("Exact Phrase", "exact_phrase");
+  m_matchModeCombo->addItem("Contains (legacy)", "contains");
+  m_matchModeCombo->setCurrentIndex(0);
+  m_matchModeCombo->setToolTip(
+      "Smart: exact word for single terms, phrase-aware for multiple words.\n"
+      "Exact Phrase: ordered phrase match with punctuation tolerance.\n"
+      "Contains: legacy substring behavior.");
+  matchRow->addWidget(m_matchModeCombo, 1);
+  modeLayout->addLayout(matchRow);
+
   leftLayout->addWidget(modeGroup);
 
   auto *outputGroup = new QGroupBox("Output");
@@ -299,6 +370,7 @@ void SearchPage::setupUi() {
   proxyGrid->addWidget(new QLabel("Cookies File:"), row, 0);
   auto *cookiesRow = new QHBoxLayout;
   m_cookiesFileInput = new QLineEdit;
+  m_cookiesFileInput->setText(Settings::lastCookiesFile());
   m_cookiesFileInput->setPlaceholderText(
       "Optional: cookies.txt to bypass IP blocks...");
   m_cookiesBrowseBtn = new QPushButton;
@@ -319,6 +391,34 @@ void SearchPage::setupUi() {
   cookiesRow->addWidget(m_cookiesFileInput, 1);
   cookiesRow->addWidget(m_cookiesBrowseBtn);
   proxyGrid->addLayout(cookiesRow, row, 1);
+  row++;
+
+  proxyGrid->addWidget(new QLabel("Cookies Browser:"), row, 0);
+  m_cookiesBrowserCombo = new QComboBox;
+  m_cookiesBrowserCombo->addItem("None", "none");
+  m_cookiesBrowserCombo->addItem("Chrome", "chrome");
+  m_cookiesBrowserCombo->addItem("Edge", "edge");
+  m_cookiesBrowserCombo->addItem("Firefox", "firefox");
+  m_cookiesBrowserCombo->addItem("Safari", "safari");
+  m_cookiesBrowserCombo->addItem("Brave", "brave");
+  m_cookiesBrowserCombo->addItem("Opera", "opera");
+  m_cookiesBrowserCombo->addItem("Vivaldi", "vivaldi");
+  m_cookiesBrowserCombo->setEditable(false);
+  m_cookiesBrowserCombo->setToolTip(
+      "Use yt-dlp --cookies-from-browser <browser> to extract cookies directly\n"
+      "from a local browser profile. Leave as None to disable.\n"
+      "If Cookies File is set and exists, that file is used first.");
+  {
+    const QString savedBrowser = Settings::lastCookiesBrowser().trimmed();
+    if (!savedBrowser.isEmpty()) {
+      const int idx = m_cookiesBrowserCombo->findData(savedBrowser, Qt::MatchFixedString);
+      if (idx >= 0)
+        m_cookiesBrowserCombo->setCurrentIndex(idx);
+      else
+        m_cookiesBrowserCombo->setCurrentText(savedBrowser);
+    }
+  }
+  proxyGrid->addWidget(m_cookiesBrowserCombo, row, 1);
   row++;
 
   proxyGrid->addWidget(new QLabel("Proxy Type:"), row, 0);
@@ -361,7 +461,7 @@ void SearchPage::setupUi() {
     int idx = m_proxyTypeCombo->currentIndex();
     bool isGeneric = (idx == 1);
     bool isWebshare = (idx == 2);
-    m_proxyUrlInput->setVisible(isGeneric);
+    m_proxyUrlInput->setVisible(isGeneric || isWebshare);
 
     auto *grid =
         qobject_cast<QGridLayout *>(m_proxyUrlInput->parentWidget()->layout());
@@ -371,7 +471,7 @@ void SearchPage::setupUi() {
         auto *item1 = grid->itemAtPosition(r, 1);
         if (item1 && item1->widget() == m_proxyUrlInput && item) {
           if (item->widget())
-            item->widget()->setVisible(isGeneric);
+            item->widget()->setVisible(isGeneric || isWebshare);
         }
         if (item1 && item1->widget() == m_proxyUsernameInput && item) {
           if (item->widget())
@@ -485,11 +585,6 @@ void SearchPage::setupUi() {
           &SearchPage::onCancelClicked);
   connect(m_browseBtn, &QPushButton::clicked, this,
           &SearchPage::onBrowseOutput);
-  if (m_pasteBtn)
-    connect(m_pasteBtn, &QPushButton::clicked, this,
-            &SearchPage::onPasteApiKey);
-  connect(m_apiToggleBtn, &QPushButton::clicked, this,
-          &SearchPage::onToggleApiVisibility);
   connect(m_videoRadio, &QRadioButton::toggled, this,
           &SearchPage::onModeChanged);
   connect(m_channelRadio, &QRadioButton::toggled, this,
@@ -522,20 +617,6 @@ QString SearchPage::outputDir() const {
 
 QStringList SearchPage::lastResults() const { return m_lastResults; }
 
-void SearchPage::onPasteApiKey() {
-  QString clip = QApplication::clipboard()->text().trimmed();
-  if (!clip.isEmpty())
-    m_apiKeyInput->setText(clip);
-}
-
-void SearchPage::onToggleApiVisibility() {
-  m_apiVisible = !m_apiVisible;
-  m_apiKeyInput->setEchoMode(m_apiVisible ? QLineEdit::Normal
-                                          : QLineEdit::Password);
-  m_apiToggleBtn->setIcon(
-      QIcon(m_apiVisible ? ":/icons/hide.svg" : ":/icons/show.svg"));
-}
-
 void SearchPage::onModeChanged() {
   m_modeStack->setCurrentIndex(m_channelRadio->isChecked() ? 1 : 0);
 }
@@ -553,21 +634,18 @@ void SearchPage::onBrowseCookies() {
   QString path =
       QFileDialog::getOpenFileName(this, "Select Cookies File", QString(),
                                    "Text Files (*.txt);;All Files (*)");
-  if (!path.isEmpty())
+  if (!path.isEmpty()) {
     m_cookiesFileInput->setText(path);
+    Settings::setLastCookiesFile(path);
+  }
 }
 
 void SearchPage::onSearchClicked() {
+  ensureYtDlpAndStartSearch();
+}
 
-  QString apiKey = m_apiKeyInput->text().trimmed();
-  if (apiKey.isEmpty()) {
-    QMessageBox::warning(this, "Missing API Key",
-                         "Please enter your YouTube Data API key.");
-    m_apiKeyInput->setFocus();
-    return;
-  }
-
-  PythonBridge::instance().saveApiKey(apiKey);
+void SearchPage::startSearch() {
+  m_cancelRequested = false;
 
   bool isChannelMode = m_channelRadio->isChecked();
   QString keyword;
@@ -605,8 +683,10 @@ void SearchPage::onSearchClicked() {
   QDir().mkpath(outDir);
 
   QJsonObject params;
-  params["api_key"] = apiKey;
+  params["api_key"] = "";  // No API key needed for yt-dlp
   params["keyword"] = keyword;
+  params["match_mode"] =
+      (m_matchModeCombo ? m_matchModeCombo->currentData().toString() : "smart");
   params["language"] = language;
   params["output_dir"] = outDir;
 
@@ -627,8 +707,22 @@ void SearchPage::onSearchClicked() {
   }
 
   QString cookiesFile = m_cookiesFileInput->text().trimmed();
+  QString cookiesBrowser =
+      m_cookiesBrowserCombo
+          ? m_cookiesBrowserCombo->currentData().toString().trimmed().toLower()
+          : QStringLiteral("none");
+  if ((cookiesBrowser.isEmpty() || cookiesBrowser == "none") &&
+      m_cookiesBrowserCombo) {
+    cookiesBrowser = m_cookiesBrowserCombo->currentText().trimmed().toLower();
+  }
+
   if (!cookiesFile.isEmpty())
     params["cookies_file"] = cookiesFile;
+  if (!cookiesBrowser.isEmpty() && cookiesBrowser != "none")
+    params["cookies_from_browser"] = cookiesBrowser;
+
+  Settings::setLastCookiesFile(cookiesFile);
+  Settings::setLastCookiesBrowser(cookiesBrowser);
 
   {
     int proxyIdx = m_proxyTypeCombo->currentIndex();
@@ -642,10 +736,13 @@ void SearchPage::onSearchClicked() {
       proxyType = "webshare";
       QString pUser = m_proxyUsernameInput->text().trimmed();
       QString pPass = m_proxyPasswordInput->text().trimmed();
+      QString pUrl = m_proxyUrlInput->text().trimmed();
       if (!pUser.isEmpty())
         params["proxy_username"] = pUser;
       if (!pPass.isEmpty())
         params["proxy_password"] = pPass;
+      if (!pUrl.isEmpty())
+        params["proxy_url"] = pUrl;
     }
     if (proxyType != "none")
       params["proxy_type"] = proxyType;
@@ -679,28 +776,263 @@ void SearchPage::onSearchClicked() {
   m_thread->start();
 }
 
-void SearchPage::onCancelClicked() {
-  if (m_worker) {
-    m_worker->requestStop();
-
-    disconnect(m_worker, nullptr, this, nullptr);
+void SearchPage::ensureYtDlpAndStartSearch() {
+  if (!localYtDlpPath().isEmpty()) {
+    startSearch();
+    return;
   }
 
-  setSearching(false);
-  m_statusLabel->setText("Search cancelled.");
-  m_logDisplay->append(
-      "<p style='margin:0;padding:2px 0;font-family:monospace;'>"
-      "<span style='color:#ff9800;font-weight:900;'>[WARN]</span>"
-      "&nbsp;<span style='color:#ffcc80;'><b>Search cancelled by "
-      "user.</b></span></p>");
+  if (m_ytdlpDownloadInProgress)
+    return;
 
-  m_worker = nullptr;
-  m_thread = nullptr;
+  m_statusLabel->setText("yt-dlp is missing — preparing download...");
+
+  if (!m_toolDownloader)
+    m_toolDownloader = new QNetworkAccessManager(this);
+
+  QNetworkRequest request{QUrl(ytDlpDownloadUrl())};
+  request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                       QNetworkRequest::NoLessSafeRedirectPolicy);
+
+  auto *reply = m_toolDownloader->head(request);
+  connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+    qint64 size = reply->header(QNetworkRequest::ContentLengthHeader).toLongLong();
+    promptInstallYtDlp(size);
+    reply->deleteLater();
+  });
+}
+
+void SearchPage::promptInstallYtDlp(qint64 contentLengthBytes) {
+  if (m_ytdlpDownloadInProgress)
+    return;
+
+  if (!m_toolDownloader)
+    m_toolDownloader = new QNetworkAccessManager(this);
+
+  const QString sizeText = contentLengthBytes > 0
+                               ? QStringLiteral(" (%1)").arg(formatBytes(contentLengthBytes))
+                               : QStringLiteral("");
+  const auto answer = QMessageBox::question(
+      this, "Download yt-dlp",
+      QStringLiteral(
+          "CapScript relies on the awesome tool yt-dlp, would you like to "
+          "download it now%1?")
+          .arg(sizeText),
+      QMessageBox::Yes | QMessageBox::No);
+
+  if (answer != QMessageBox::Yes)
+    return;
+
+  downloadYtDlp(false, QStringLiteral("Installing yt-dlp"));
+}
+
+void SearchPage::downloadYtDlp(bool backgroundUpdate, const QString &statusPrefix) {
+  if (m_ytdlpDownloadInProgress)
+    return;
+
+  if (!m_toolDownloader)
+    m_toolDownloader = new QNetworkAccessManager(this);
+
+  const QString binDir = QCoreApplication::applicationDirPath() + "/bin";
+  QDir().mkpath(binDir);
+  const QString destFile = binDir + "/yt-dlp.exe";
+
+  m_ytdlpDownloadInProgress = true;
+  m_statusLabel->setText(backgroundUpdate ? "Updating yt-dlp..." : statusPrefix + "...");
+
+  auto *progress = new QProgressDialog(this);
+  if (!backgroundUpdate) {
+    progress->setWindowTitle("Downloading yt-dlp");
+    progress->setLabelText(QStringLiteral("Downloading yt-dlp..."));
+    progress->setCancelButton(nullptr);
+    progress->setWindowModality(Qt::ApplicationModal);
+    progress->setMinimumDuration(0);
+    progress->setRange(0, 100);
+    progress->setValue(0);
+    progress->show();
+  }
+
+  QNetworkRequest request{QUrl(ytDlpDownloadUrl())};
+  request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                       QNetworkRequest::NoLessSafeRedirectPolicy);
+
+  auto *reply = m_toolDownloader->get(request);
+  connect(reply, &QNetworkReply::downloadProgress, this,
+          [this, progress, backgroundUpdate](qint64 received, qint64 total) {
+            int percent = 0;
+            if (total > 0)
+              percent = static_cast<int>(received * 100 / total);
+            if (!backgroundUpdate)
+              progress->setValue(percent);
+            if (!backgroundUpdate) {
+              m_progressBar->setVisible(true);
+              m_progressBar->setRange(0, 100);
+              m_progressBar->setValue(percent);
+            }
+          });
+  connect(reply, &QNetworkReply::finished, this,
+          [this, reply, progress, backgroundUpdate, destFile]() {
+            const auto cleanup = [this, reply, progress]() {
+              reply->deleteLater();
+              progress->deleteLater();
+              m_ytdlpDownloadInProgress = false;
+            };
+
+            if (reply->error() != QNetworkReply::NoError) {
+              m_statusLabel->setText("yt-dlp download failed.");
+              m_logDisplay->append("<span style='color:#f44336;'>Failed to download yt-dlp: " +
+                                   reply->errorString() + "</span>");
+              cleanup();
+              return;
+            }
+
+            QFile outFile(destFile);
+            if (!outFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+              m_statusLabel->setText("yt-dlp download failed.");
+              m_logDisplay->append("<span style='color:#f44336;'>Failed to write yt-dlp to bin/</span>");
+              cleanup();
+              return;
+            }
+
+            outFile.write(reply->readAll());
+            outFile.close();
+
+            if (backgroundUpdate)
+              m_statusLabel->setText("Updated yt-dlp");
+            else
+              m_statusLabel->setText("yt-dlp downloaded");
+
+            m_logDisplay->append(backgroundUpdate
+                                     ? "<span style='color:#90ee90;'>Updated yt-dlp.</span>"
+                                     : "<span style='color:#4caf50;'>yt-dlp downloaded successfully.</span>");
+
+            m_progressBar->setValue(100);
+            if (!backgroundUpdate)
+              progress->setValue(100);
+
+            persistLocalYtDlpVersion(this, destFile,
+                                     backgroundUpdate ? nullptr : m_statusLabel);
+
+            cleanup();
+            if (!backgroundUpdate)
+              startSearch();
+          });
+}
+
+void SearchPage::checkForYtDlpUpdate() {
+  const QString currentYtdlp = localYtDlpPath();
+  if (currentYtdlp.isEmpty()) {
+    m_statusLabel->setText("yt-dlp is missing");
+    return;
+  }
+
+  m_statusLabel->setText("Checking for yt-dlp updates...");
+
+  auto *versionProc = new QProcess(this);
+  versionProc->setProcessChannelMode(QProcess::MergedChannels);
+  versionProc->setStandardInputFile(QProcess::nullDevice());
+  versionProc->setProgram(currentYtdlp);
+  versionProc->setArguments({"--version"});
+#ifdef _WIN32
+  versionProc->setCreateProcessArgumentsModifier(
+      [](QProcess::CreateProcessArguments *a) { a->flags |= 0x08000000; });
+#endif
+  connect(versionProc,
+          QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
+          [this, versionProc](int exitCode, QProcess::ExitStatus) {
+            const QString localVersion = normalizeYtDlpVersion(
+                QString::fromLocal8Bit(versionProc->readAll()).trimmed());
+            versionProc->deleteLater();
+
+            if (exitCode != 0 || localVersion.isEmpty()) {
+              m_statusLabel->setText("Could not read local yt-dlp version");
+              return;
+            }
+
+            QString savedVersion = Settings::ytDlpVersionSaved();
+            if (savedVersion.isEmpty()) {
+              savedVersion = localVersion;
+              Settings::setYtDlpVersionSaved(savedVersion);
+            } else if (compareVersionStrings(savedVersion, localVersion) != 0) {
+              savedVersion = localVersion;
+              Settings::setYtDlpVersionSaved(savedVersion);
+            }
+
+            if (!m_toolDownloader)
+              m_toolDownloader = new QNetworkAccessManager(this);
+
+            QNetworkRequest req{QUrl(latestYtDlpReleaseApiUrl())};
+            req.setHeader(QNetworkRequest::UserAgentHeader,
+                          QStringLiteral("CapScriptPro/1.0"));
+            req.setRawHeader("Accept", "application/vnd.github+json");
+            req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                             QNetworkRequest::NoLessSafeRedirectPolicy);
+
+            auto *reply = m_toolDownloader->get(req);
+            connect(reply, &QNetworkReply::finished, this, [this, reply, savedVersion]() {
+              const auto done = [reply]() { reply->deleteLater(); };
+
+              if (reply->error() != QNetworkReply::NoError) {
+                m_statusLabel->setText("Could not check yt-dlp latest version");
+                done();
+                return;
+              }
+
+              const QByteArray body = reply->readAll();
+              QJsonParseError parseError{};
+              const QJsonDocument doc = QJsonDocument::fromJson(body, &parseError);
+              if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+                m_statusLabel->setText("Invalid yt-dlp release response");
+                done();
+                return;
+              }
+
+              const QJsonObject obj = doc.object();
+              QString latestVersion = obj.value("tag_name").toString().trimmed();
+              if (latestVersion.isEmpty())
+                latestVersion = obj.value("name").toString().trimmed();
+              latestVersion = normalizeYtDlpVersion(latestVersion);
+
+              if (latestVersion.isEmpty()) {
+                m_statusLabel->setText("Could not parse latest yt-dlp version");
+                done();
+                return;
+              }
+
+              Settings::setYtDlpLastCheckedLatest(latestVersion);
+
+              if (compareVersionStrings(savedVersion, latestVersion) < 0) {
+                m_statusLabel->setText(
+                    QStringLiteral("Updating yt-dlp (%1 -> %2)")
+                        .arg(savedVersion, latestVersion));
+                downloadYtDlp(true, QStringLiteral("Updating yt-dlp"));
+              } else {
+                m_statusLabel->setText(
+                    QStringLiteral("yt-dlp is up to date (%1)").arg(savedVersion));
+              }
+
+              done();
+            });
+          });
+  versionProc->start();
+}
+
+void SearchPage::onCancelClicked() {
+  if (!m_worker)
+    return;
+
+  m_cancelRequested = true;
+  m_cancelBtn->setEnabled(false);
+  m_statusLabel->setText("Cancelling...");
+  m_worker->requestStop();
 }
 
 void SearchPage::onWorkerProgress(int percent) {
   m_progressBar->setValue(percent);
-  m_statusLabel->setText(QString("Searching... %1%").arg(percent));
+  if (m_cancelRequested)
+    m_statusLabel->setText(QString("Cancelling... %1%").arg(percent));
+  else
+    m_statusLabel->setText(QString("Searching... %1%").arg(percent));
 }
 
 void SearchPage::onWorkerLog(const QString &html) {
@@ -712,16 +1044,31 @@ void SearchPage::onWorkerFinished(int count, const QStringList &results) {
   setSearching(false);
   m_progressBar->setValue(100);
 
-  if (count > 0) {
-    m_statusLabel->setText(
-        QString("<span style='color:#4caf50;'>Done — %1 match%2 found</span>")
-            .arg(count)
-            .arg(count == 1 ? "" : "es"));
+  if (m_cancelRequested) {
+    if (count > 0) {
+      m_statusLabel->setText(
+          QString("<span style='color:#ff9800;'>Search cancelled — %1 partial "
+                  "match%2 captured</span>")
+              .arg(count)
+              .arg(count == 1 ? "" : "es"));
+      emit searchFinished(count, results);
+    } else {
+      m_statusLabel->setText("Search cancelled.");
+    }
   } else {
-    m_statusLabel->setText("Search complete — no matches found.");
+    if (count > 0) {
+      m_statusLabel->setText(
+          QString("<span style='color:#4caf50;'>Done — %1 match%2 found</span>")
+              .arg(count)
+              .arg(count == 1 ? "" : "es"));
+    } else {
+      m_statusLabel->setText("Search complete — no matches found.");
+    }
+
+    emit searchFinished(count, results);
   }
 
-  emit searchFinished(count, results);
+  m_cancelRequested = false;
 
   m_worker = nullptr;
   m_thread = nullptr;
@@ -729,9 +1076,15 @@ void SearchPage::onWorkerFinished(int count, const QStringList &results) {
 
 void SearchPage::onWorkerError(const QString &msg) {
   setSearching(false);
-  m_statusLabel->setText("<span style='color:#f44336;'>Error occurred</span>");
-  m_logDisplay->append("<span style='color:#f44336;'>Error: " + msg +
-                       "</span>");
+  if (m_cancelRequested) {
+    m_statusLabel->setText("Search cancelled.");
+  } else {
+    m_statusLabel->setText("<span style='color:#f44336;'>Error occurred</span>");
+    m_logDisplay->append("<span style='color:#f44336;'>Error: " + msg +
+                         "</span>");
+  }
+
+  m_cancelRequested = false;
 
   m_worker = nullptr;
   m_thread = nullptr;
@@ -740,6 +1093,7 @@ void SearchPage::onWorkerError(const QString &msg) {
 void SearchPage::setSearching(bool active) {
   m_searchBtn->setEnabled(!active);
   m_cancelBtn->setVisible(active);
+  m_cancelBtn->setEnabled(active);
   m_progressBar->setVisible(active);
   if (active) {
     m_progressBar->setValue(0);

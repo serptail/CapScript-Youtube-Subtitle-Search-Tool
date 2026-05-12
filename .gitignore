@@ -1,9 +1,12 @@
 cmake-build-*/
 out/
 build-release/
+release/
+build-release/
 
 .vs/
 .vscode/
+.venv/
 
 *.user
 *.suo

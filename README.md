@@ -22,7 +22,7 @@ CapScript Pro is a Windows desktop application for searching YouTube captions at
 
 This repository includes:
 - A modern Qt/C++ desktop app.
-- An embedded Python engine for YouTube API, transcript fetching, and search logic.
+- An embedded Python engine for yt-dlp transcript fetching and search logic.
 - A standalone Python CLI for headless/automation workflows.
 
 ## Table of Contents
@@ -55,7 +55,7 @@ The UI is native Qt (C++), while core YouTube logic is powered by Python.
 
 ## Desktop App Features
 
-- Search Page: Handles API configuration and flexible search queries for videos or channels. It includes advanced network settings (proxy, cookies), language selection, and encrypted credential persistence.
+- Search Page: Handles flexible search queries for videos or channels. It includes advanced network settings (proxy, cookies), language selection, and encrypted credential persistence.
 - Viewer Page: Displays structured transcripts with clickable timestamps and supports in-app video playback. It also allows users to export or import transcript files.
 - Clip Downloader: Parses transcripts to identify specific clips for download. It supports various formats (mp4, mkv, webm, mp3), quality controls, and uses worker threads for efficient background processing.
 - Renderer Page: Merges downloaded clips into a single final video using FFmpeg. It auto-detects formats and utilizes stream copying for fast, lossless concatenation.
@@ -70,7 +70,6 @@ High-level flow:
 1. The app resolves Python runtime paths near the executable.
 2. PythonBridge initializes Python with controlled module search paths.
 3. C++ invokes Python functions for:
-   - API key validation and storage.
    - Proxy settings storage/loading.
    - Channel resolution and video lookups.
    - Transcript search execution.
@@ -93,13 +92,7 @@ This split keeps the UI native and fast while preserving Python ecosystem advant
 ### Python Engine and CLI
 
 From python/requirements.txt:
-- youtube-transcript-api
-- google-api-python-client
-- google-auth
-- google-auth-httplib2
-- google-api-core
-- httplib2
-- requests
+- yt-dlp
 - cryptography
 - rich
 
@@ -182,21 +175,12 @@ cd python
 python -m pip install -r requirements.txt
 ```
 
-### 3. API Key
+### 3. Authentication Model
 
-You need a YouTube Data API v3 key.
+No API key is required for transcript search in yt-dlp mode.
 
-You can provide it every run:
-
-```powershell
-python cli.py --api-key YOUR_KEY ...
-```
-
-Or save once (encrypted in preferences.ini):
-
-```powershell
-python cli.py --api-key YOUR_KEY --save-api-key --search-type video --video-ids dQw4w9WgXcQ --keyword test
-```
+Legacy API-key CLI flags are accepted as no-ops for compatibility with
+older scripts, but they are not required for normal usage.
 
 ### 4. Optional Network Setup
 
@@ -231,9 +215,8 @@ python cli.py --search-type channel --channel "@mkbhd" --keyword "sponsors" --ma
 
 - --language en
 - --output-dir transcripts
-- --validate-api-key
-- --save-api-key
 - --cookies FILE
+- --cookies-from-browser chrome|firefox|edge|brave
 - --proxy-type, --proxy-username, --proxy-password, --proxy-url
 - --save-proxy, --clear-proxy
 
@@ -251,10 +234,10 @@ python cli.py --search-type channel --channel "@mkbhd" --keyword "sponsors" --ma
 python cli.py --search-type video --video-ids "https://youtu.be/dQw4w9WgXcQ,abc123XYZ00" --keyword "never gonna"
 ```
 
-### 3. Save API key for future runs
+### 3. Use browser cookies
 
 ```powershell
-python cli.py --api-key YOUR_KEY --save-api-key --search-type video --video-ids dQw4w9WgXcQ --keyword test
+python cli.py --search-type channel --channel "@mkbhd" --keyword "AI" --cookies-from-browser chrome
 ```
 
 ### 4. Use Webshare proxy + cookies
@@ -280,9 +263,9 @@ python cli.py --search-type video --video-ids abc123 --keyword test
 - Clip download/render not working:
   - Confirm yt-dlp and ffmpeg are installed and discoverable.
   - Check app logs for tool path and process errors.
-- API errors or quota exceeded:
-  - Validate key with --validate-api-key.
-  - Check YouTube Data API quota status in Google Cloud.
+- Rate limiting or access errors:
+  - Try cookies.txt and/or --cookies-from-browser.
+  - Reduce parallel activity and retry later.
 
 ## License
 This project is licensed under the MIT License + Commons Clause v1.0.

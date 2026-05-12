@@ -5,6 +5,7 @@
 #include <QHBoxLayout>
 #include <QRegularExpression>
 #include <QResizeEvent>
+#include <QScrollBar>
 #include <QSplitter>
 #include <QStringConverter>
 #include <QTextStream>
@@ -188,7 +189,10 @@ void ViewerPage::hideEvent(QHideEvent *event) {
 void ViewerPage::repositionLoadButton() {
   if (!m_exportBtn || !m_importBtn || !m_transcriptView)
     return;
-  const int marginRight = 8;
+  const int scrollbarWidth = m_transcriptView->verticalScrollBar()
+                                 ? m_transcriptView->verticalScrollBar()->width()
+                                 : 0;
+  const int marginRight = 25;
   const int marginTop = 8;
   const int buttonSpacing = 4;
 

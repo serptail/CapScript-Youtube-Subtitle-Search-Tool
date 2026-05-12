@@ -5,7 +5,6 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
-#include <QStandardPaths>
 #include <QString>
 
 namespace CapScript {
@@ -16,7 +15,19 @@ public:
 
   static QString ffmpeg() { return findTool(QStringLiteral("ffmpeg")); }
 
+  static QString localYtdlp() {
+    return localToolPath(QStringLiteral("yt-dlp"));
+  }
+
+  static QString localFfmpeg() {
+    return localToolPath(QStringLiteral("ffmpeg"));
+  }
+
   static QString findTool(const QString &name) {
+    return localToolPath(name);
+  }
+
+  static QString localToolPath(const QString &name) {
     QString exeName = name + QStringLiteral(".exe");
 
     QString appDir = QCoreApplication::applicationDirPath();
@@ -30,10 +41,6 @@ public:
       if (fi.exists() && fi.isExecutable())
         return fi.absoluteFilePath();
     }
-
-    QString found = QStandardPaths::findExecutable(name);
-    if (!found.isEmpty())
-      return found;
 
     return {};
   }

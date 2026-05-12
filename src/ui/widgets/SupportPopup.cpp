@@ -174,6 +174,8 @@ void SupportPopup::showPopup() {
   if (x < 24)
     x = 24;
   int y = parentWidget()->height() - height() - 24;
+  if (y < 24)
+    y = 24;
   move(x, y);
 
   show();
@@ -195,11 +197,15 @@ void SupportPopup::hidePopup() {
 
 bool SupportPopup::eventFilter(QObject *obj, QEvent *event) {
 
-  if (obj == parentWidget() && event->type() == QEvent::Resize && isVisible()) {
+  if (obj == parentWidget() &&
+      (event->type() == QEvent::Resize || event->type() == QEvent::Move) &&
+      isVisible()) {
     int x = parentWidget()->width() - width() - 24;
     if (x < 24)
       x = 24;
     int y = parentWidget()->height() - height() - 24;
+    if (y < 24)
+      y = 24;
     move(x, y);
   }
   return QWidget::eventFilter(obj, event);

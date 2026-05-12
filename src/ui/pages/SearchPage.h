@@ -15,6 +15,8 @@
 #include <QThread>
 #include <QWidget>
 
+class QNetworkAccessManager;
+
 namespace CapScript {
 
 class SearchWorker;
@@ -36,8 +38,6 @@ private slots:
   void onSearchClicked();
   void onCancelClicked();
   void onBrowseOutput();
-  void onPasteApiKey();
-  void onToggleApiVisibility();
   void onModeChanged();
   void onBrowseCookies();
 
@@ -54,14 +54,13 @@ private:
   void positionFeedbackBtn();
   void setupUi();
   void setSearching(bool active);
+  void startSearch();
+  void ensureYtDlpAndStartSearch();
+  void promptInstallYtDlp(qint64 contentLengthBytes);
+  void downloadYtDlp(bool backgroundUpdate, const QString &statusPrefix);
+  void checkForYtDlpUpdate();
   void toggleLogExpanded();
   bool eventFilter(QObject *watched, QEvent *event) override;
-
-  QLineEdit *m_apiKeyInput = nullptr;
-  QPushButton *m_pasteBtn = nullptr;
-  QPushButton *m_apiToggleBtn = nullptr;
-  QPushButton *m_apiInfoBtn = nullptr;
-  bool m_apiVisible = false;
 
   QRadioButton *m_videoRadio = nullptr;
   QRadioButton *m_channelRadio = nullptr;
@@ -74,6 +73,7 @@ private:
   QLineEdit *m_channelInput = nullptr;
   QLineEdit *m_channelSearchTerm = nullptr;
   QComboBox *m_channelLangCombo = nullptr;
+  QComboBox *m_matchModeCombo = nullptr;
   QSpinBox *m_maxResultsSpin = nullptr;
 
   QLineEdit *m_outputDirInput = nullptr;
@@ -81,6 +81,7 @@ private:
   QLineEdit *m_outputFileInput = nullptr;
   QLineEdit *m_cookiesFileInput = nullptr;
   QPushButton *m_cookiesBrowseBtn = nullptr;
+  QComboBox *m_cookiesBrowserCombo = nullptr;
 
   QComboBox *m_proxyTypeCombo = nullptr;
   QLineEdit *m_proxyUrlInput = nullptr;
@@ -100,9 +101,13 @@ private:
   SearchWorker *m_worker = nullptr;
   QThread *m_thread = nullptr;
   QStringList m_lastResults;
+  bool m_cancelRequested = false;
+  bool m_startupUpdateChecked = false;
+  bool m_ytdlpDownloadInProgress = false;
 
   QPushButton *m_feedbackBtn = nullptr;
   class FeedbackPanel *m_feedbackPanel = nullptr;
+  QNetworkAccessManager *m_toolDownloader = nullptr;
 };
 
 }

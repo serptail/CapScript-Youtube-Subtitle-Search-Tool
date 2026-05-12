@@ -19,6 +19,7 @@
 #include <QVariantMap>
 
 
+#include <functional>
 #include <mutex>
 #include <string>
 
@@ -68,21 +69,45 @@ public:
       std::function<bool(int, const QString &)> progressCb = nullptr);
 
   QJsonArray getChannelVideos(const QString &apiKey, const QString &channelId,
-                              const QString &lang, int maxResults);
+                  const QString &lang, int maxResults,
+                  const QString &cookiesFile = {},
+                  const QString &cookiesFromBrowser = {},
+                  const QString &proxyType = {},
+                  const QString &proxyUsername = {},
+                  const QString &proxyPassword = {},
+                  const QString &proxyUrl = {});
   QJsonArray parseVideoIds(const QString &input);
   QJsonObject getVideoDetails(const QString &apiKey, const QString &videoId);
 
-  QString resolveChannelId(const QString &apiKey, const QString &channelInput);
+    QString resolveChannelId(const QString &apiKey, const QString &channelInput,
+                 const QString &cookiesFile = {},
+                 const QString &cookiesFromBrowser = {},
+                 const QString &proxyType = {},
+                 const QString &proxyUsername = {},
+                 const QString &proxyPassword = {},
+                 const QString &proxyUrl = {});
 
   QJsonArray fetchVideosByChannelDate(const QString &apiKey,
                                       const QString &channelId,
                                       const QString &startIso,
-                                      const QString &endIso);
+                      const QString &endIso,
+                      const QString &cookiesFile = {},
+                      const QString &cookiesFromBrowser = {},
+                      const QString &proxyType = {},
+                      const QString &proxyUsername = {},
+                      const QString &proxyPassword = {},
+                      const QString &proxyUrl = {});
   QJsonArray searchVideosByKeyword(const QString &apiKey,
                                    const QString &channelId,
                                    const QString &keyword,
                                    const QString &startIso = {},
-                                   const QString &endIso = {});
+                     const QString &endIso = {},
+                     const QString &cookiesFile = {},
+                     const QString &cookiesFromBrowser = {},
+                     const QString &proxyType = {},
+                     const QString &proxyUsername = {},
+                     const QString &proxyPassword = {},
+                     const QString &proxyUrl = {});
   QJsonObject getVideoDetailsBatch(const QString &apiKey,
                                    const QStringList &videoIds);
 

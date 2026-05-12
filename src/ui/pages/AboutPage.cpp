@@ -2,7 +2,7 @@
 #include "../../core/UrlLauncher.h"
 #include <QApplication>
 #include <QDate>
-#include <QFont>
+#include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPainter>
@@ -48,6 +48,66 @@ void AboutPage::paintEvent(QPaintEvent *) {
 void AboutPage::setupUi() {
   setObjectName("aboutPage");
   setStyleSheet("QWidget#aboutPage { background: transparent; }"
+                "QWidget#aboutInfoCard, QWidget#updateCard {"
+                " background-color: rgba(16, 16, 16, 0.9);"
+                " border: 1px solid #2a2a2a;"
+                " border-radius: 11px;"
+                "}"
+                "QLabel#heroTitle {"
+                " font-family: 'Akrobat Black', sans-serif;"
+                " font-size: 28pt;"
+                " font-weight: 900;"
+                " letter-spacing: 1.2px;"
+                " color: #f5f5f5;"
+                " background: transparent;"
+                "}"
+                "QLabel#heroSubtitle {"
+                " color: #a8a8a8;"
+                " font-size: 10pt;"
+                " letter-spacing: 0.7px;"
+                " font-weight: 500;"
+                "}"
+                "QLabel#sectionTitle {"
+                " color: #ebebeb;"
+                " font-size: 10pt;"
+                " letter-spacing: 0.8px;"
+                " font-weight: 700;"
+                " text-transform: uppercase;"
+                "}"
+                "QLabel#metaLabel {"
+                " color: #9a9a9a;"
+                " font-size: 9pt;"
+                " font-weight: 600;"
+                " letter-spacing: 0.5px;"
+                "}"
+                "QLabel#metaValue {"
+                " color: #f0f0f0;"
+                " font-size: 9.5pt;"
+                " font-weight: 600;"
+                "}"
+                "QLabel#licenseHint {"
+                " color: #aaaaaa;"
+                " font-size: 9pt;"
+                " font-weight: 500;"
+                " line-height: 1.5;"
+                " padding-top: 2px;"
+                "}"
+                "QLabel#statusLabel {"
+                " color: #9a9a9a;"
+                " font-size: 9.5pt;"
+                " font-weight: 500;"
+                "}"
+                "QLabel#progressLabel {"
+                " color: #f0f0f0;"
+                " font-weight: 700;"
+                " font-size: 10pt;"
+                "}"
+                "QLabel#footerLabel {"
+                " color: #5a5a5a;"
+                " font-size: 9pt;"
+                " letter-spacing: 0.5px;"
+                " font-weight: 500;"
+                "}"
                 "QPushButton#primaryBtn {"
                 " background-color: #dc0f2c;"
                 " color: #ffffff;"
@@ -89,84 +149,121 @@ void AboutPage::setupUi() {
                 " background-color: #0a0a0a;"
                 " border-color: #ff1744;"
                 " color: #ff1744;"
+                "}"
+                "QProgressBar#updateProgressBar {"
+                " background-color: #141414;"
+                " border: 1px solid #2a2a2a;"
+                " border-radius: 3px;"
+                "}"
+                "QProgressBar#updateProgressBar::chunk {"
+                " background-color: #FF0033;"
+                " border-radius: 2px;"
                 "}");
 
   auto *root = new QVBoxLayout(this);
-  root->setContentsMargins(24, 24, 24, 14);
-  root->setSpacing(10);
+          root->setContentsMargins(26, 22, 26, 14);
+          root->setSpacing(12);
 
-  root->addStretch(1);
-
-  auto *logo = new QLabel(this);
-  logo->setAlignment(Qt::AlignCenter);
-  logo->setPixmap(
+    auto *logo = new QLabel(this);
+    logo->setAlignment(Qt::AlignCenter);
+    logo->setPixmap(
       QPixmap(":/icons/app_icon.png")
-          .scaled(132, 132, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-  root->addWidget(logo, 0, Qt::AlignHCenter);
+        .scaled(108, 108, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    root->addWidget(logo, 0, Qt::AlignHCenter);
 
-  auto *title = new QLabel("CapScript Pro", this);
-  title->setAlignment(Qt::AlignCenter);
-  title->setStyleSheet("font-family: 'Akrobat Black', sans-serif;"
-                       "font-size: 28pt;"
-                       "font-weight: 900;"
-                       "letter-spacing: 1.2px;"
-                       "color: #f5f5f5;"
-                       "background: transparent;");
-  title->setMinimumHeight(50);
-  root->addWidget(title);
+    auto *title = new QLabel("CapScript Pro", this);
+    title->setObjectName("heroTitle");
+    title->setAlignment(Qt::AlignCenter);
+    title->setMinimumHeight(44);
+    root->addWidget(title);
 
-  auto *subtitle = new QLabel("YouTube Subtitle Search Tool", this);
-  subtitle->setAlignment(Qt::AlignCenter);
-  subtitle->setStyleSheet("color: #a8a8a8; font-size: 10pt; letter-spacing: "
-                          "0.7px; font-weight: 500;");
-  root->addWidget(subtitle);
+    auto *subtitle = new QLabel("YouTube Subtitle Search Tool", this);
+    subtitle->setObjectName("heroSubtitle");
+    subtitle->setAlignment(Qt::AlignCenter);
+    root->addWidget(subtitle);
 
   const QString appVersion =
       qApp ? qApp->applicationVersion() : QStringLiteral("unknown");
 
-  auto *body = new QLabel(this);
-  body->setAlignment(Qt::AlignCenter);
-  body->setWordWrap(true);
-  body->setOpenExternalLinks(false);
-  body->setTextInteractionFlags(Qt::TextBrowserInteraction);
-  body->setText(
-      QString(
-          "<span style='color:#bfbfbf;'>Author</span>: <span "
-          "style='color:#f0f0f0;'>~serptail</span><br/>"
-          "<span style='color:#bfbfbf;'>Version</span>: <span "
-          "style='color:#f0f0f0;'>%1</span><br/>"
-          "<span style='color:#bfbfbf;'>License</span>: <span "
-          "style='color:#f0f0f0;'>MIT + Commons Clause v1.0</span><br/><br/>"
-          "<span style='color:#a6a6a6;'>Source-available software.<br/>"
-          "Viewing and modification permitted.<br/>"
-          "Selling or redistribution prohibited.</span>")
-          .arg(appVersion));
-  body->setStyleSheet(
-      "font-size: 10pt; line-height: 1.5; color: #c5c5c5; font-weight: 500;");
-  root->addWidget(body, 0, Qt::AlignHCenter);
+          auto *infoCard = new QWidget(this);
+          infoCard->setObjectName("aboutInfoCard");
+          auto *infoLayout = new QVBoxLayout(infoCard);
+          infoLayout->setContentsMargins(16, 14, 16, 14);
+          infoLayout->setSpacing(10);
+
+          auto *aboutTitle = new QLabel("About", infoCard);
+          aboutTitle->setObjectName("sectionTitle");
+          infoLayout->addWidget(aboutTitle);
+
+          auto *metaGrid = new QGridLayout;
+          metaGrid->setHorizontalSpacing(18);
+          metaGrid->setVerticalSpacing(8);
+          metaGrid->setColumnStretch(1, 1);
+
+          auto *authorLabel = new QLabel("Author", infoCard);
+          authorLabel->setObjectName("metaLabel");
+          auto *authorValue = new QLabel("~serptail", infoCard);
+          authorValue->setObjectName("metaValue");
+          metaGrid->addWidget(authorLabel, 0, 0);
+          metaGrid->addWidget(authorValue, 0, 1);
+
+          auto *versionLabel = new QLabel("Version", infoCard);
+          versionLabel->setObjectName("metaLabel");
+          auto *versionValue = new QLabel(appVersion, infoCard);
+          versionValue->setObjectName("metaValue");
+          metaGrid->addWidget(versionLabel, 1, 0);
+          metaGrid->addWidget(versionValue, 1, 1);
+
+          auto *licenseLabel = new QLabel("License", infoCard);
+          licenseLabel->setObjectName("metaLabel");
+          auto *licenseValue = new QLabel("MIT + Commons Clause v1.0", infoCard);
+          licenseValue->setObjectName("metaValue");
+          metaGrid->addWidget(licenseLabel, 2, 0);
+          metaGrid->addWidget(licenseValue, 2, 1);
+
+          infoLayout->addLayout(metaGrid);
+
+          auto *licenseHint = new QLabel(
+            "Source-available software. Viewing and modification permitted.\n"
+            "Selling or redistribution prohibited.",
+            infoCard);
+          licenseHint->setObjectName("licenseHint");
+          licenseHint->setWordWrap(true);
+          infoLayout->addWidget(licenseHint);
+
+          root->addWidget(infoCard);
+
+          auto *updateCard = new QWidget(this);
+          updateCard->setObjectName("updateCard");
+          auto *updateLayout = new QVBoxLayout(updateCard);
+          updateLayout->setContentsMargins(16, 14, 16, 14);
+          updateLayout->setSpacing(10);
+
+          auto *updateTitle = new QLabel("Updates", updateCard);
+          updateTitle->setObjectName("sectionTitle");
+          updateLayout->addWidget(updateTitle);
 
   m_statusLabel = new QLabel(
-      "Press \"Check for updates\" to query the latest release.", this);
+            "Press \"Check for updates\" to query the latest release.", updateCard);
+          m_statusLabel->setObjectName("statusLabel");
   m_statusLabel->setAlignment(Qt::AlignCenter);
-  m_statusLabel->setStyleSheet(
-      "color: #9a9a9a; font-size: 9.5pt; font-weight: 500;");
-  root->addWidget(m_statusLabel, 0, Qt::AlignHCenter);
+          m_statusLabel->setWordWrap(true);
+          updateLayout->addWidget(m_statusLabel);
 
-  root->addStretch(1);
+          auto *buttonRow = new QHBoxLayout;
+          buttonRow->setSpacing(10);
+          buttonRow->addStretch(1);
 
-  auto *buttonRow = new QHBoxLayout;
-  buttonRow->addStretch(1);
-
-  m_checkUpdatesBtn = new QPushButton("Check for updates", this);
+          m_checkUpdatesBtn = new QPushButton("Check for updates", updateCard);
   m_checkUpdatesBtn->setObjectName("primaryBtn");
-  m_checkUpdatesBtn->setMinimumWidth(170);
+          m_checkUpdatesBtn->setMinimumWidth(182);
   m_checkUpdatesBtn->setFixedHeight(40);
   connect(m_checkUpdatesBtn, &QPushButton::clicked, this,
           &AboutPage::checkForUpdatesRequested);
   buttonRow->addWidget(m_checkUpdatesBtn);
 
-  auto *githubBtn = new QPushButton("GitHub Repository", this);
-  githubBtn->setMinimumWidth(170);
+          auto *githubBtn = new QPushButton("GitHub Repository", updateCard);
+          githubBtn->setMinimumWidth(182);
   githubBtn->setFixedHeight(40);
   githubBtn->setObjectName("secondaryBtn");
   connect(githubBtn, &QPushButton::clicked, this,
@@ -174,44 +271,40 @@ void AboutPage::setupUi() {
   buttonRow->addWidget(githubBtn);
 
   buttonRow->addStretch(1);
-  root->addLayout(buttonRow);
-  root->addSpacing(16);
+    updateLayout->addLayout(buttonRow);
 
-  auto *progressContainer = new QWidget(this);
+    auto *progressContainer = new QWidget(updateCard);
   auto *progressLayout = new QVBoxLayout(progressContainer);
   progressLayout->setContentsMargins(0, 0, 0, 0);
   progressLayout->setSpacing(4);
 
-  m_updateProgressLabel = new QLabel(this);
+    m_updateProgressLabel = new QLabel(updateCard);
+    m_updateProgressLabel->setObjectName("progressLabel");
   m_updateProgressLabel->setAlignment(Qt::AlignCenter);
-  m_updateProgressLabel->setStyleSheet(
-      "color: #f0f0f0; font-weight: bold; font-size: 10pt;");
   m_updateProgressLabel->setVisible(false);
   m_updateProgressLabel->setText("0%");
   progressLayout->addWidget(m_updateProgressLabel);
 
-  m_updateProgressBar = new QProgressBar(this);
+    m_updateProgressBar = new QProgressBar(updateCard);
+    m_updateProgressBar->setObjectName("updateProgressBar");
   m_updateProgressBar->setRange(0, 100);
   m_updateProgressBar->setValue(0);
   m_updateProgressBar->setTextVisible(false);
   m_updateProgressBar->setFixedHeight(8);
   m_updateProgressBar->setVisible(false);
-  m_updateProgressBar->setStyleSheet(
-      "QProgressBar { background-color: #141414; border: 1px solid #2a2a2a; "
-      "border-radius: 3px; }"
-      "QProgressBar::chunk { background-color: #FF0033; border-radius: 2px; }");
   progressLayout->addWidget(m_updateProgressBar);
 
-  root->addWidget(progressContainer);
+    updateLayout->addWidget(progressContainer);
+
+    root->addWidget(updateCard);
 
   root->addStretch(1);
 
   const int year = QDate::currentDate().year();
   auto *footer =
       new QLabel(QString("%1 Serptail. All rights reserved.").arg(year), this);
+    footer->setObjectName("footerLabel");
   footer->setAlignment(Qt::AlignCenter);
-  footer->setStyleSheet("color: #5a5a5a; font-size: 9pt; letter-spacing: "
-                        "0.5px; font-weight: 500;");
   root->addWidget(footer);
 }
 

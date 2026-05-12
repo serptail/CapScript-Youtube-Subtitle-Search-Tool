@@ -1,43 +1,9 @@
-#include "MainWindow.h"
-#include "../core/AutoUpdater.h"
-#include "../core/Settings.h"
-#include "TitleBar.h"
-#include "pages/AboutPage.h"
-#include "pages/ClipDownloaderPage.h"
-#include "pages/ListCreatorPage.h"
-#include "pages/RendererPage.h"
-#include "pages/SearchPage.h"
-#include "pages/ViewerPage.h"
-#include "styles/ThemeManager.h"
-#include "widgets/SupportPopup.h"
-#include <QTimer>
-#include <QApplication>
-#include <QCloseEvent>
-#include <QDateTime>
-#include <QFileDialog>
-#include <QGraphicsDropShadowEffect>
-#include <QGuiApplication>
-#include <QKeySequence>
-#include <QMessageBox>
-#include <QPainterPath>
-#include <QPixmap>
-#include <QScreen>
-#include <QShortcut>
-#include <QVBoxLayout>
-#include <QWindow>
-
-#ifdef Q_OS_WIN
-#include <dwmapi.h>
-#include <windows.h>
-#include <windowsx.h>
-
 struct ScreenshotContext {
   QWidget *mainWindow;
   QPainter *painter;
   RECT mainRect;
   double dpr;
 };
-#endif
 
 namespace CapScript {
 
@@ -46,20 +12,15 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
   setWindowFlags(Qt::FramelessWindowHint | Qt::Window);
   setAttribute(Qt::WA_TranslucentBackground, false);
 
-  setFixedSize(1100, 950);
+  setMinimumSize(900, 620);
+  resize(1100, 950);
 
   if (auto *app = qobject_cast<QApplication *>(qApp))
     app->setStyleSheet(ThemeManager::generateQSS());
 
   setupUi();
   wireSignals();
-
-  if (auto *screen = QGuiApplication::primaryScreen()) {
-    QRect available = screen->availableGeometry();
-    int x = available.x() + (available.width() - 1000) / 2;
-    int y = available.y() + (available.height() - 700) / 2;
-    move(x, y);
-  }
+  restoreGeometryFromSettings();
 
   QTimer::singleShot(800, this, [this]() {
     if (m_updater)
@@ -79,8 +40,6 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
     QCoreApplication::processEvents();
 
     QPixmap snapshot = this->grab();
-
-#ifdef Q_OS_WIN
 
     HWND hwnd = reinterpret_cast<HWND>(this->winId());
     QPainter painter(&snapshot);
@@ -142,14 +101,11 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
           return TRUE;
         },
         reinterpret_cast<LPARAM>(&ctx));
-#endif
 
     if (!dest.isEmpty()) {
       snapshot.save(dest, "PNG", 100);
     }
   });
-
-#ifdef Q_OS_WIN
 
   HWND hwnd = reinterpret_cast<HWND>(winId());
   MARGINS margins = {1, 1, 1, 1};
@@ -157,7 +113,6 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
   BOOL darkMode = TRUE;
   DwmSetWindowAttribute(hwnd, 20 , &darkMode,
                         sizeof(darkMode));
-#endif
 }
 
 MainWindow::~MainWindow() { saveGeometry(); }
