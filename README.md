@@ -1,125 +1,143 @@
----
+<div align="center">
 
-[![Release](https://img.shields.io/badge/Release-v2.6-red.svg)](https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool/releases)
-![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Release](https://img.shields.io/badge/Release-v2.6.0-red.svg)](https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool/releases) ![Platform](https://img.shields.io/badge/Platform-Windows-blue.svg) [![License](https://img.shields.io/badge/License-MIT%20%2B%20Commons%20Clause-white.svg)](LICENSE)
+
+</div>
+
 
 <p align="center">
-  <img width="512" alt="capscript-png-noborder" src="https://github.com/user-attachments/assets/68c203e3-846c-41bc-bac7-443044638413" />
+  <img width="300"alt="app_icon_filled" src="https://github.com/user-attachments/assets/88a7e846-a3d9-4f6f-8770-dd7b27a57d7e" />
   <br>
-  <em><strong>CapScript Pro, GUI Based YouTube Transcript Search Tool</strong></em>
+  <em><strong>A GUI-based YouTube transcript search tool for Windows</strong></em>
 </p>
-
-# CapScript Pro
-
-CapScript Pro is a Windows desktop application for searching YouTube captions at scale, then turning those findings into usable media outputs.
-
-This repository includes:
-- A modern Qt/C++ desktop app.
-- An embedded Python engine for yt-dlp transcript fetching and search logic.
-- A standalone Python CLI for headless/automation workflows.
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Desktop App Features](#desktop-app-features)
-- [How the Embedded Python Engine Works](#how-the-embedded-python-engine-works)
-- [Tech Stack and Dependencies](#tech-stack-and-dependencies)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
-- [Desktop App Setup](#desktop-app-setup)
-- [Build and Run (Qt App)](#build-and-run-qt-app)
-- [CLI Guide](#cli-guide)
-- [CLI Setup and Requirements](#cli-setup-and-requirements)
-- [CLI Usage](#cli-usage)
-- [CLI Examples](#cli-examples)
+- [Installation](#installation)
+- [Building from Source](#building-from-source)
+- [CLI Reference](#cli-reference)
 - [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
 - [License](#license)
 
 ## Overview
 
-CapScript Pro solves a practical workflow:
-1. Find subtitle matches for a keyword across videos.
-2. Review exact timestamps inside the built-in viewer.
-3. Extract clips from the matched moments.
-4. Render clips into a final output video.
-5. Build reusable video ID lists for future runs.
+CapScript Pro searches YouTube captions at scale and turns the results into usable media — clips, rendered videos, and reusable video-ID lists. It ships as a native Qt/C++ desktop app for Windows, backed by an embedded Python engine, plus a standalone CLI for headless or automated workflows.
 
-The UI is native Qt (C++), while core YouTube logic is powered by Python.
+**Typical workflow:**
 
-> **v2.5 — No more YouTube Data API.**
-> The app no longer uses the YouTube Data API at all. It was too restrictive, had an embarrassingly low quota, and broke constantly — sometimes for no apparent reason. Everything now runs through yt-dlp directly, which is faster, more reliable, and doesn't require you to register an API key, manage credentials, or hit an arbitrary daily limit. Good riddance.
+1. Search for a keyword across a channel or a list of videos.
+2. Review exact timestamp matches in the built-in transcript viewer.
+3. Extract clips at the matched moments.
+4. Render clips into a single output video via FFmpeg.
+5. Save reusable video-ID lists for future searches.
 
-## Desktop App Features
+> **No YouTube Data API.** As of v2.5, CapScript Pro runs entirely on [yt-dlp](https://github.com/yt-dlp/yt-dlp) — no API key, no quota limits, no credential management.
 
-- **Search Page:** Handles flexible search queries for videos or channels. Includes advanced network settings (proxy, cookies), language selection, and encrypted credential persistence.
-- **Viewer Page:** Displays structured transcripts with clickable timestamps and supports in-app video playback. Allows users to export or import transcript files.
-- **Clip Downloader:** Parses transcripts to identify specific clips for download. Supports various formats (mp4, mkv, webm, mp3), quality controls, and uses worker threads for efficient background processing.
-- **Renderer Page:** Merges downloaded clips into a single final video using FFmpeg. Auto-detects formats and utilizes stream copying for fast, lossless concatenation.
-- **List Creator:** Fetches channel videos based on date ranges or keywords. Provides a selectable list with thumbnail previews and options to export video IDs.
-- **System & Support:** Includes an integrated update checker that stages updates automatically.
+## Features
 
-## How the Embedded Python Engine Works
+| Page | What it does |
+|---|---|
+| **Search** | Query by video or channel, with proxy support, cookie-based auth, and language selection |
+| **Viewer** | Browse transcripts with clickable timestamps and in-app playback; import/export transcripts |
+| **Clip Downloader** | Pull clips from matched timestamps in mp4, mkv, webm, or mp3, with quality controls |
+| **Renderer** | Merge clips into a final video via FFmpeg, with control over format, resolution, frame rate, and CRF |
+| **List Creator** | Build video-ID lists from a channel by date range or keyword, with thumbnail previews |
+| **Updater** | Built-in update checker that stages new releases automatically |
 
-The desktop app starts a bundled Python runtime and imports capscript_engine.py through a C++ bridge.
+## Architecture
 
-High-level flow:
-1. The app resolves Python runtime paths near the executable.
-2. PythonBridge initializes Python with controlled module search paths.
-3. C++ invokes Python functions for:
-   - Proxy settings storage/loading.
-   - Channel resolution and video lookups.
-   - Transcript search execution.
-4. Search progress is sent back into C++ via callback trampolines and displayed in UI/CLI.
+The UI is native Qt/C++; YouTube-facing logic runs in an embedded Python runtime.
 
-This split keeps the UI native and fast while preserving Python ecosystem advantages for YouTube-related operations.
+1. The app resolves Python runtime paths relative to the executable.
+2. `PythonBridge` initializes an embedded interpreter with scoped module search paths.
+3. C++ calls into Python for channel resolution, transcript search, and proxy/credential storage.
+4. Progress streams back to C++ via callback trampolines and updates the UI (or CLI output) live.
 
-## Tech Stack and Dependencies
+This keeps the interface fast and native while reusing the Python/yt-dlp ecosystem for the parts that need it.
 
-### Desktop Application
+## Tech Stack
 
-- C++17
-- Qt 6 modules:
-  - Core, Gui, Widgets, Network, Concurrent, Svg
-  - Optional: Multimedia, MultimediaWidgets
-  - Optional: Quick, Qml, QuickWidgets, WebView, WebViewQuick
-- Python 3 interpreter + development libs for embedding
-- Windows WebView2 runtime/SDK (optional but recommended for in-app player)
+**Desktop app**
+- C++17, Qt 6 (Core, Gui, Widgets, Network, Concurrent, Svg)
+- Optional: Multimedia/MultimediaWidgets, Quick/Qml/QuickWidgets/WebView/WebViewQuick
+- Embedded Python 3 interpreter
+- WebView2 runtime (optional, enables the in-app player)
 
-### Python Engine and CLI
+**Python engine / CLI** — see `python/requirements.txt`
+- yt-dlp, cryptography, rich
 
-From python/requirements.txt:
-- yt-dlp
-- cryptography
-- rich
+**External tools** (required for clip/render features) — resolved from `app/bin/`, the app root, or system `PATH`
+- yt-dlp, ffmpeg, ffprobe
 
-### External Media Tools
-
-Required for clip download/render features:
-- yt-dlp
-- ffmpeg
-- ffprobe (normally included with ffmpeg)
-
-The app looks for tools in:
-- app/bin/
-- app root
-- system PATH
-
-### Optional Service Component
-
-Cloudflare Worker (TypeScript) for feedback delivery and basic rate limiting.
+**Optional**
+- A Cloudflare Worker (TypeScript) handles feedback delivery and rate limiting.
 
 ## Project Structure
 
-- src/: Qt C++ application and workers
-- python/: capscript_engine.py + cli.py + Python requirements
-- scripts/: utility scripts (including embedded runtime bundling)
-- qml/: QML resources for web player integrations
-- assets/: app fonts, icons, resources
-- cloudflare-worker/: optional feedback backend
-- docs/: web documentation assets
-- third_party/webview2/: WebView2 SDK assets
+```
+.github/workflows/                 CI workflows
+assets/
+├── fonts/                         Bundled fonts (+ licenses)
+├── icons/                         App icons
+└── qml/                           QML resources for web player integration
+cloudflare-worker/
+└── capscript-feedback-worker/     Optional feedback backend (TypeScript)
+docs/                              Web documentation assets
+python/                            capscript_engine.py, cli.py, requirements.txt
+scripts/                           Build utilities, incl. the embedded runtime bundler
+src/
+├── app/                           Application entry point
+├── core/                          Python bridge, settings, updater, URL handling
+├── ui/
+│   ├── pages/                     Search, Viewer, Clip Downloader, Renderer, List Creator, About
+│   ├── styles/                    Theming (ThemeManager)
+│   └── widgets/                   Reusable UI widgets
+├── updater/                       Standalone updater executable
+└── workers/                       Background threads for search, clip, and render jobs
+third_party/
+├── phantomstyle/                  Vendored Qt style (src/phantom, src/styleplugin)
+└── webview2/sdk/                  WebView2 SDK headers and native libs
+CMakeLists.txt
+CapScriptPro.rc
+CapScriptUpdater.rc
+LICENSE
+```
 
-## Desktop App Setup
+## Installation
+
+CapScript Pro can be used two ways: the **GUI app** (Windows only, no setup) or the **CLI** (cross-platform-friendly, requires Python).
+
+### Option 1: GUI (recommended for most users)
+
+1. Download the latest Windows build from [Releases](https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool/releases) (currently **v2.6.0**).
+2. Extract the archive and run `CapScriptPro.exe`.
+3. No separate Python or Qt install is needed — the release ships with a bundled Python runtime and all required DLLs.
+
+> **Optional - Note:** CapScript Pro bundles the WebView2 *loader* only — the actual WebView2 Runtime (Microsoft's embedded browser engine) is not shipped with the app. It comes preinstalled on virtually all up-to-date Windows 10/11 systems alongside Edge. If it's missing, the in-app player won't load; install it from [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/) (Evergreen Bootstrapper, a ~2 MB installer).
+
+### Option 2: CLI (for automation / headless use)
+
+```powershell
+git clone https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool.git
+cd CapScript-Youtube-Subtitle-Search-Tool/python
+python -m pip install -r requirements.txt
+```
+
+Then run searches directly:
+
+```powershell
+python cli.py --search-type channel --channel "@mkbhd" --keyword "sponsors" --max-results 20
+```
+
+See [CLI Reference](#cli-reference) below for full usage, options, and examples. `ffmpeg` and `yt-dlp` should be on your `PATH` if you plan to use clip/render features from the CLI as well.
+
+## Building from Source
 
 ### Prerequisites
 
@@ -127,149 +145,115 @@ Cloudflare Worker (TypeScript) for feedback delivery and basic rate limiting.
 - CMake 3.21+
 - Qt 6 (matching your compiler toolchain)
 - Python 3 with headers/libs discoverable by CMake
-- Optional but recommended: WebView2 runtime installed
-- Optional for clip/render workflow: yt-dlp and ffmpeg available
+- WebView2 runtime (optional, recommended)
+- yt-dlp and ffmpeg on `PATH` (optional, needed for clip/render features)
 
-### Optional: Bundle Python Runtime for Distribution
-
-Use the provided script to package embeddable Python + pip dependencies into a target python folder:
-
-```powershell
-python scripts/bundle_python.py 3.11.9 .\python .\python\requirements.txt
-```
-
-## Build and Run (Qt App)
-
-Example CMake flow (Visual Studio generator):
+### Build
 
 ```powershell
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64
 cmake --build build --config Release
 ```
 
-Run the desktop app from build output after ensuring python/ runtime assets are present near the executable.
+The build output includes the app executable alongside a bundled `python/` runtime — no additional setup needed to run it.
 
-## UI
+### Bundling Python for distribution
 
-<img width="2556" height="1940" alt="LISTCREATORTAB" src="https://github.com/user-attachments/assets/94bd79fd-c2aa-457a-b8e9-6428129c1a63" />
-<img width="2556" height="1940" alt="DOWNLOADERTAB" src="https://github.com/user-attachments/assets/ddc686f5-9d85-459d-8927-e498fe29e87a" />
+To package an embeddable Python runtime with dependencies manually:
 
-## CLI Guide
+```powershell
+python scripts/bundle_python.py 3.11.9 .\python .\python\requirements.txt
+```
 
-The repository includes a full command-line interface in python/cli.py for non-GUI usage.
+## CLI Reference
 
-Use CLI when you need:
-- Automation (batch jobs, scripting, CI-like tasks).
-- Remote/headless execution.
-- Fast one-off searches without opening the desktop app.
+The Python CLI (`python/cli.py`) covers automation, headless environments, and quick one-off searches without launching the GUI.
 
-## CLI Setup and Requirements
-
-### 1. Python Version
-
-Recommended: Python 3.10+.
-
-### 2. Install Dependencies
+### Setup
 
 ```powershell
 cd python
 python -m pip install -r requirements.txt
 ```
 
-### 3. Authentication Model
+Recommended: Python 3.10+.
 
-No API key is required. CapScript Pro runs entirely through yt-dlp.
+### Authentication
 
-For authenticated requests (age-restricted content, private playlists, etc.) pass cookies directly from your browser — no manual export needed:
+No API key is needed — everything runs through yt-dlp. For age-restricted or private content, pass cookies directly from your browser:
 
 ```powershell
 --cookies-from-browser chrome|firefox|edge|brave
 ```
 
-Legacy API-key CLI flags are accepted as no-ops for compatibility with older scripts.
+Legacy API-key flags are still accepted as no-ops, for compatibility with older scripts.
 
-### 4. Optional Network Setup
-
-- Cookies file (Netscape/Mozilla format): `--cookies path\to\cookies.txt`
-- Cookies from browser (new): `--cookies-from-browser chrome|firefox|edge|brave`
-- Proxy modes:
-  - `--proxy-type webshare` with username/password
-  - `--proxy-type generic` with proxy URL
-- Persist proxy settings with `--save-proxy`
-- Clear saved proxy with `--clear-proxy`
-
-## CLI Usage
-
-### Main Search Command
+### Usage
 
 ```powershell
 python cli.py --search-type channel --channel "@mkbhd" --keyword "sponsors" --max-results 20
 ```
 
-### Required Inputs
+**Required**
+- `--search-type` — `channel` or `video`
+- `--keyword` — search term
+- `--channel` (channel mode) or `--video-ids` (video mode)
 
-- `--search-type` channel or video
-- `--keyword` "your search term"
-- For channel mode: `--channel`
-- For video mode: `--video-ids`
-
-### Useful Options
-
+**Common options**
 - `--language en`
 - `--output-dir transcripts`
-- `--cookies FILE`
-- `--cookies-from-browser chrome|firefox|edge|brave`
+- `--cookies FILE` / `--cookies-from-browser chrome|firefox|edge|brave`
 - `--proxy-type`, `--proxy-username`, `--proxy-password`, `--proxy-url`
 - `--save-proxy`, `--clear-proxy`
 
-## CLI Examples
-
-### 1. Search a channel by handle
+### Examples
 
 ```powershell
+# Search a channel by handle
 python cli.py --search-type channel --channel "@mkbhd" --keyword "sponsors" --max-results 20
-```
 
-### 2. Search explicit video URLs/IDs
-
-```powershell
+# Search explicit video URLs/IDs
 python cli.py --search-type video --video-ids "https://youtu.be/dQw4w9WgXcQ,abc123XYZ00" --keyword "never gonna"
-```
 
-### 3. Use browser cookies
-
-```powershell
+# Use browser cookies
 python cli.py --search-type channel --channel "@mkbhd" --keyword "AI" --cookies-from-browser chrome
-```
 
-### 4. Use Webshare proxy + cookies
-
-```powershell
+# Webshare proxy + cookies file
 python cli.py --search-type channel --channel "UCxxxxxx" --keyword "AI" --proxy-type webshare --proxy-username USER --proxy-password PASS --cookies cookies.txt
-```
 
-### 5. Save generic proxy once
-
-```powershell
+# Save a generic proxy once, reuse on later runs
 python cli.py --proxy-type generic --proxy-url "http://1.2.3.4:8080" --save-proxy
 python cli.py --search-type video --video-ids abc123 --keyword test
 ```
 
 ## Troubleshooting
 
-- **Python engine fails to initialize in app:** Ensure python/ exists near the executable and contains runtime artifacts (Lib, python3xx zip, required modules).
-- **No transcript results:** Try `--cookies-from-browser` or a cookies.txt file, and verify the language code is available for each video.
-- **Clip download/render not working:** Confirm yt-dlp and ffmpeg are installed and discoverable. Check app logs for tool path and process errors.
-- **Rate limiting or access errors:** Use `--cookies-from-browser` to pass your browser session. Reduce parallel activity and retry later.
+| Symptom | Fix |
+|---|---|
+| Python engine fails to initialize | Confirm `python/` exists next to the executable with `Lib`, the Python zip, and required modules |
+| No transcript results | Try `--cookies-from-browser` or a `cookies.txt`, and confirm the language code exists for that video |
+| Clip download/render fails | Verify yt-dlp and ffmpeg are installed and discoverable; check app logs for tool-path errors |
+| Rate limiting / access errors | Pass browser cookies via `--cookies-from-browser`, reduce concurrent activity, and retry |
 
-## Bugs
+## Contributing
 
-Please report bugs by opening an issue on GitHub.
+Found a bug or have a feature idea? [Open an issue](https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool/issues) — bug reports and suggestions are both welcome.
 
 ## License
 
-This project is licensed under the MIT License + Commons Clause v1.0.
+MIT License + Commons Clause v1.0.
 
-You are free to use, modify, and distribute this software for free, but you may not sell it or offer it as a paid/SaaS service.
+Free to use, modify, and distribute — but not to sell or offer as a paid/SaaS service. See [LICENSE](LICENSE) for the full text.
 
-See the LICENSE file for the full text.
+---
+
+## Screenshots
+
+<p align="center">
+  <img width="100%" alt="List Creator tab" src="https://github.com/user-attachments/assets/94bd79fd-c2aa-457a-b8e9-6428129c1a63" />
+  <br><em>List Creator</em>
+</p>
+<p align="center">
+  <img width="100%" alt="Downloader tab" src="https://github.com/user-attachments/assets/ddc686f5-9d85-459d-8927-e498fe29e87a" />
+  <br><em>Clip Downloader</em>
+</p>
