@@ -5,47 +5,18 @@ namespace CapScript {
 QString ThemeManager::generateQSS(const QString&) {
     using namespace Colors;
 
-    // Phantom now paints every stock control (buttons, checkboxes, radios,
-    // combos, spinboxes, sliders, scrollbars, menus, list/tree/table rows,
-    // headers) straight from the QPalette set in Application::setupPalette.
-    // This file only covers what Phantom has no opinion on: the frameless
-    // titlebar, the custom tab strip, and a handful of bespoke display
-    // widgets that aren't standard Qt controls. Do NOT add border/
-    // background-color/padding rules for stock widget classes here —
-    // any box-model QSS on a widget class makes Qt fall back to its own
-    // stylesheet painter for that class, silently un-Phantom-ing it.
-
     QString qss = QStringLiteral(
         R"(
 QWidget {
-    /* font-family/font-size/color are NOT box-model properties, so setting
-       them here does not flag matched widgets as "styled" in
-       QStyleSheetStyle and does not disable PhantomStyle's painting for
-       them. Do NOT add background/border/padding/margin to this rule —
-       see note below. */
+ 
     font-family: 'Inter', 'Segoe UI', -apple-system, 'Helvetica Neue', Arial, sans-serif;
     font-size: 9pt;
     color: %1;
 }
 
-/* NOTE: there is intentionally no "QWidget { background-color: ... }" or
-   "* { ... }" rule here. Both selectors match QComboBox/QPushButton/etc.
-   via inherits("QWidget") the same way any type selector matches its
-   subclasses. The moment a box-model property (background/border/padding/
-   margin) matches a widget through ANY selector, QStyleSheetStyle flags
-   that widget instance "styled" and takes over painting it itself,
-   bypassing PhantomStyle's CC_ComboBox/PE_PanelButtonCommand entirely —
-   which is what produced the flat black combos/buttons. Transparent
-   backgrounds for stock controls come from QPalette::Window/Button in
-   Application::setupPalette instead; only ID selectors (#foo) or type
-   selectors for non-stock-control classes (QLabel, QDialog, ...) are safe
-   to give background-color/border/padding here. */
 
 #mainWindow {
-    /* Must stay transparent: with WA_TranslucentBackground enabled, this is
-       the true (composited) window background. An opaque fill here would
-       paint square corners behind #centralContainer's rounded border and
-       defeat the anti-aliased rounding DWM now provides. */
+  
     background-color: transparent;
     margin: 0px;
     padding: 0px;
@@ -59,7 +30,6 @@ QWidget {
     padding: 0px;
 }
 
-/* ---- Titlebar: frameless window chrome, no native equivalent ---- */
 
 #titleBar {
     background-color: %4;
@@ -133,7 +103,6 @@ QWidget {
     color: %9;
 }
 
-/* ---- Custom tab strip (not QTabBar-driven, hand-rolled) ---- */
 
 #tabBar {
     background-color: %4;
@@ -222,12 +191,9 @@ QDialog {
     border-radius: 5px;
 }
 
-/* ---- Bespoke display widgets: not standard controls ---- */
 
 #renderConfigGroup {
-    /* Group box itself stays Phantom-painted (frame); title now lives in
-       the #sectionDivider label placed above the box instead of as the
-       QGroupBox title. */
+   
     background-color: #111111;
     border-radius: 5px;
 }
@@ -268,10 +234,7 @@ QDialog {
 }
 
 QTableWidget#resultsTable {
-    /* Table frame, header, and the checkbox column background all read as
-       #111111; the individual title/video-id row cells are set to #111111
-       via item background in code so only the checkbox column contrasts
-       against the header/edges. */
+   
     background-color: #111111;
     border: 1px solid %3;
     border-radius: 4px;
@@ -357,23 +320,18 @@ QLabel#sectionDivider {
     padding-bottom: 4px;
 }
 
-/* Plain page/section heading (e.g. "Render Configuration") — normal case,
-   no underline, matches the weight used for headings elsewhere. */
 QLabel#pageHeading {
     color: %1;
     font-size: 10.5pt;
     font-weight: 600;
 }
 
-/* Accent-colored percentage readout next to an update/progress bar. */
 QLabel#progressLabel {
     color: %8;
     font-weight: 700;
     font-size: 9pt;
 }
 
-/* ---- Quality slider: groove (track), filled portion, and handle each get
-   their own color so the fill level reads clearly against the track. ---- */
 
 QSlider#qualitySlider::groove:horizontal {
     height: 4px;
@@ -411,11 +369,7 @@ QSlider#qualitySlider::handle:horizontal:pressed {
     background-color: #ffffff;
     border-color: %8;
 }
-)")
-        // NOTE: QString::arg() binds to the lowest-numbered %N still
-        // unresolved in the string, not to a fixed "argument slot" — so
-        // this chain must list only the placeholders that actually
-        // survived the trim (%1-%10, %16-%20, %24, %26), in that order.
+)")  
         .arg(TextPrimary)     // %1
         .arg(BgBase)          // %2
         .arg(Border)          // %3

@@ -449,12 +449,6 @@ void MainWindow::showEvent(QShowEvent *e) {
 }
 
 void MainWindow::applyWindowMask() {
-  // With WA_TranslucentBackground enabled, DWM alpha-composites the window
-  // against the desktop, so the rounded corners drawn by #centralContainer's
-  // QSS border-radius are already smooth. A QRegion mask is a 1-bit (fully
-  // in/out) clip with no anti-aliasing, so it always produced a jagged edge
-  // no matter the radius or resolution — hence it's removed rather than
-  // kept as a "smoother" version. Clearing any legacy mask is enough.
   clearMask();
 }
 

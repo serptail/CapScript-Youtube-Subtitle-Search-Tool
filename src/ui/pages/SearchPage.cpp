@@ -164,7 +164,7 @@ static void persistLocalYtDlpVersion(QWidget *owner, const QString &ytdlpPath,
   proc->start();
 }
 
-} // namespace
+}
 
 void SearchPage::resizeEvent(QResizeEvent *e) {
   QWidget::resizeEvent(e);
@@ -710,7 +710,7 @@ void SearchPage::startSearch() {
   QDir().mkpath(outDir);
 
   QJsonObject params;
-  params["api_key"] = "";  // No API key needed for yt-dlp
+  params["api_key"] = "";
   params["keyword"] = keyword;
   params["match_mode"] =
       (m_matchModeCombo ? m_matchModeCombo->currentData().toString() : "smart");

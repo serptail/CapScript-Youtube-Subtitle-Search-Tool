@@ -9,6 +9,7 @@ qml/
 .vscode/
 .venv/
 third_party/webview2/
+third_party/webview2_disabled/
 
 *.user
 *.suo

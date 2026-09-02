@@ -23,8 +23,6 @@ Application::Application(int &argc, char **argv) : QApplication(argc, argv) {
   setApplicationVersion("2.6.0");
 #endif
 
-  // Phantom paints from QPalette, not stylesheets — this replaces Fusion
-  // as the widget painter. setStyle() must run before any widgets exist.
   setStyle(new PhantomStyle());
 
   setWindowIcon(QIcon(":/icons/app_icon.ico"));
@@ -72,9 +70,6 @@ void Application::setupPalette() {
   using namespace Colors;
   QPalette p;
 
-  // Phantom reads these directly to paint every stock control, so this
-  // palette IS the theme now — the old QSS color rules for buttons,
-  // checkboxes, combos, etc. are gone; this is where those colors live.
   p.setColor(QPalette::Window, QColor(BgBase));
   p.setColor(QPalette::WindowText, QColor(TextPrimary));
   p.setColor(QPalette::Base, QColor(BgInput));
@@ -86,9 +81,6 @@ void Application::setupPalette() {
   p.setColor(QPalette::Button, QColor(BgCard));
   p.setColor(QPalette::ButtonText, QColor(TextPrimary));
 
-  // This is the red accent: Phantom uses Highlight for checked/selected/
-  // pressed states on every widget it paints (checkboxes, radios, tabs,
-  // sliders, selected list/tree/table rows, progress bars).
   p.setColor(QPalette::Highlight, QColor(Accent));
   p.setColor(QPalette::HighlightedText, QColor(TextOnAccent));
   p.setColor(QPalette::Link, QColor(Accent));

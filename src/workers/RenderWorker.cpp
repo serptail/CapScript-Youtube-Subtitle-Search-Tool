@@ -180,8 +180,6 @@ void RenderWorker::handleOutputLine(const QString &line, double totalSecs,
 
 namespace {
 
-// Resolve which video/audio codec to use for a given target container +
-// hwAccel preference. Falls back to sensible software encoders.
 QString videoCodecFor(const QString &targetExt, bool hwAccel) {
   if (targetExt == "webm")
     return "libvpx-vp9";
@@ -189,14 +187,14 @@ QString videoCodecFor(const QString &targetExt, bool hwAccel) {
     return "prores_ks";
   if (targetExt == "mkv")
     return hwAccel ? "hevc_nvenc" : "libx265";
-  return hwAccel ? "h264_nvenc" : "libx264"; // mp4 (default)
+  return hwAccel ? "h264_nvenc" : "libx264";
 }
 
 QString audioCodecFor(const QString &targetExt) {
   return targetExt == "webm" ? "libopus" : "aac";
 }
 
-} // namespace
+}
 
 void RenderWorker::run() {
   emit logOutput(rlogHtml("Render worker started.", "#66ccff", true));
@@ -212,10 +210,8 @@ void RenderWorker::run() {
                           : (fmt == ClipFormat::Mkv) ? "mkv"
                                                      : "webm";
 
-  // Options set by RendererPage::applyRenderOptionsToWorker() via
-  // setProperty(); read them here so they actually affect the ffmpeg call.
-  const QString resolution = property("resolution").toString();     // "source","2160","1440","1080","720","480"
-  const QString outputFormat = property("outputFormat").toString(); // "mp4","mov","mkv","webm"
+  const QString resolution = property("resolution").toString();
+  const QString outputFormat = property("outputFormat").toString();
   const int frameRate = property("frameRate").isValid() ? property("frameRate").toInt() : 0;
   const int crf = property("crf").isValid() ? property("crf").toInt() : 20;
   const bool hwAccel = property("hwAccel").toBool();
@@ -312,9 +308,9 @@ void RenderWorker::run() {
     args << "-c:v" << vcodec;
 
     if (vcodec == "prores_ks") {
-      args << "-profile:v" << "3"; // ProRes uses profile, not CRF
+      args << "-profile:v" << "3";
     } else if (hwAccel && targetExt != "webm") {
-      args << "-cq" << QString::number(crf); // NVENC-style quality param
+      args << "-cq" << QString::number(crf);
     } else if (targetExt == "webm") {
       args << "-crf" << QString::number(crf) << "-b:v" << "0";
     } else {

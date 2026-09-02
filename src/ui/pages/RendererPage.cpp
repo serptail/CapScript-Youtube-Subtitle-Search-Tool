@@ -31,7 +31,6 @@ void RendererPage::setupUi() {
   rootLayout->setContentsMargins(20, 16, 20, 16);
   rootLayout->setSpacing(16);
 
-  // Normal page header — outside the box
   auto *configHeading = new QLabel("Render Configuration");
   configHeading->setStyleSheet(
       "font-size: 12px;"
@@ -40,7 +39,6 @@ void RendererPage::setupUi() {
   );
   rootLayout->addWidget(configHeading);
 
-  // Box containing the configuration fields
   auto *configGroup = new QGroupBox();
   configGroup->setObjectName("renderConfigGroup");
 
@@ -126,8 +124,6 @@ void RendererPage::setupUi() {
   auto *qualityRow = new QHBoxLayout;
   m_qualitySlider = new QSlider(Qt::Horizontal);
   m_qualitySlider->setObjectName("qualitySlider");
-  // Lower CRF == higher quality/bigger file; slider is shown inverted so
-  // dragging right always reads as "more quality" to the user.
   m_qualitySlider->setRange(0, 100);
   m_qualitySlider->setValue(70);
   m_qualitySlider->setTickPosition(QSlider::TicksBelow);
@@ -194,8 +190,7 @@ void RendererPage::setupUi() {
 }
 
 void RendererPage::onQualitySliderChanged(int value) {
-  // Map the 0-100 "more quality = further right" slider onto an x264/x265
-  // CRF value (lower CRF = higher quality). 0 -> CRF 32, 100 -> CRF 14.
+
   int crf = 32 - qRound((value / 100.0) * 18.0);
   QString label = value >= 80   ? "Very High"
                   : value >= 55 ? "High"
@@ -324,9 +319,6 @@ void RendererPage::applyRenderOptionsToWorker() {
   if (!m_worker)
     return;
 
-  // Handed over as dynamic properties so RenderWorker can opt into reading
-  // them (via property()) without RendererPage depending on its exact
-  // constructor signature.
   const int value = m_qualitySlider->value();
   const int crf = 32 - qRound((value / 100.0) * 18.0);
 

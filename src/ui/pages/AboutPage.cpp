@@ -26,7 +26,6 @@ void AboutPage::setupUi() {
   root->setContentsMargins(24, 16, 24, 16);
   root->setSpacing(14);
 
-  // ---- Hero: icon + title/subtitle, same pattern as other page headers ----
   auto *hero = new QHBoxLayout;
   hero->setSpacing(14);
 
@@ -51,7 +50,6 @@ void AboutPage::setupUi() {
   hero->addLayout(heroText, 1);
   root->addLayout(hero);
 
-  // ---- Two side-by-side cards, same layout convention as ListCreatorPage ----
   auto *topRow = new QHBoxLayout;
   topRow->setSpacing(14);
 
@@ -107,7 +105,6 @@ void AboutPage::setupUi() {
 
   topRow->addWidget(aboutGroup, 1);
 
-  // -- Software updates card --
   auto *updateGroup = new QGroupBox("Software Updates", this);
   updateGroup->setObjectName("aboutGroup");
 
