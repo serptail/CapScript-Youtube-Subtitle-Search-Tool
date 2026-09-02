@@ -1,3 +1,5 @@
+# YouTube Bulk Caption Search Tool 
+
 <div align="center">
 
 [![Release](https://img.shields.io/badge/Release-v2.6.0-red.svg)](https://github.com/serptail/CapScript-Youtube-Subtitle-Search-Tool/releases) ![Platform](https://img.shields.io/badge/Platform-Windows-blue.svg) [![License](https://img.shields.io/badge/License-MIT%20%2B%20Commons%20Clause-white.svg)](LICENSE)
