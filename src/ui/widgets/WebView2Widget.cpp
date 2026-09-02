@@ -11,8 +11,8 @@
 #include <QTimer>
 
 #ifdef CAPSCRIPT_WEBVIEW2
-#include <WebView2.h>
 #include <Windows.h>
+#include <WebView2.h>
 
 namespace {
 

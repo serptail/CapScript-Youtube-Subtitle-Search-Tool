@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 env:
-  QT_VERSION: "6.10.2"
+  QT_VERSION: "6.10.3"
   PYTHON_VERSION: "3.11"
   BUILD_TYPE: Release
 
