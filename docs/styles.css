@@ -1,0 +1,191 @@
+:root {
+	color-scheme: dark;
+}
+
+@font-face {
+	font-family: 'Akrobat Black';
+	src: url('assets/fonts/Akrobat-Black.ttf') format('truetype');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Gilroy ExtraBold';
+	src: url('assets/fonts/Gilroy-ExtraBold.otf') format('opentype');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: #111111;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #2a2a2a;
+	border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #333333;
+}
+
+.shadow-accent {
+	box-shadow: 0 0 40px -10px rgba(255, 0, 51, 0.15);
+}
+
+.perspective-1000 {
+	perspective: 1000px;
+}
+
+.brand-title,
+.site-hero-title {
+	font-family: 'Akrobat Black', Inter, 'Segoe UI', Arial, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.accent-s {
+	color: #FF0033;
+	font-weight: 800;
+	text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.brand {
+	display: inline-flex;
+	align-items: center;
+}
+
+.brand-mark {
+	width: 38px;
+	height: 38px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.brand-logo {
+	width: 34px;
+	height: 34px;
+	object-fit: contain;
+	display: block;
+	filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.55));
+}
+
+.container .font-bold.text-lg {
+	margin-left: 4px;
+}
+
+.feature-img {
+	border-radius: 4px;
+}
+
+.button {
+	cursor: pointer;
+	border: none;
+	background: #e6002e;
+	color: #fff;
+	width: 72px;
+	height: 72px;
+	border-radius: 50%;
+	overflow: hidden;
+	position: relative;
+	display: grid;
+	place-content: center;
+	transition:
+		background 300ms,
+		transform 200ms;
+	font-weight: 600;
+}
+
+.button--sm {
+	width: 72px;
+	height: 72px;
+	font-size: 0.62rem;
+}
+
+.button__text {
+	--chars: 24;
+}
+
+.button__text {
+	position: absolute;
+	inset: 0;
+	animation: text-rotation 8s linear infinite;
+}
+
+.button__text>span {
+	position: absolute;
+	transform: rotate(calc(360deg / var(--chars) * var(--index)));
+	inset: 1px;
+}
+
+.button__circle {
+	position: relative;
+	width: 28px;
+	height: 28px;
+	overflow: hidden;
+	background: #fff;
+	color: #e6002e;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.button__icon--copy {
+	position: absolute;
+	transform: translate(-150%, 150%);
+}
+
+.button:hover {
+	background: #000;
+	transform: scale(1.05);
+}
+
+.button:hover .button__icon {
+	color: #000;
+}
+
+.button:hover .button__icon:first-child {
+	transition: transform 0.3s ease-in-out;
+	transform: translate(150%, -150%);
+}
+
+.button:hover .button__icon--copy {
+	transition: transform 0.3s ease-in-out 0.1s;
+	transform: translate(0);
+}
+
+@keyframes text-rotation {
+	to {
+		rotate: 360deg;
+	}
+}
+
+.glass-tile {
+	background: rgba(0, 0, 0, 0.49);
+	border-radius: 16px;
+	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+	backdrop-filter: blur(11.6px);
+	-webkit-backdrop-filter: blur(11.6px);
+	border: 1px solid rgba(0, 0, 0, 0.35);
+	transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.glass-tile:hover {
+	background: rgba(0, 0, 0, 0.6);
+	transform: translateY(-2px);
+}

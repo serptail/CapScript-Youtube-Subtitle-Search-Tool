@@ -1,0 +1,131 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  QT_VERSION: "6.10.2"
+  PYTHON_VERSION: "3.11"
+  BUILD_TYPE: Release
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Extract version
+        id: version
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = "${{ github.ref_name }}"
+          $ver = if ($tag -match '^v(.+)$') { $Matches[1] } else { "0.0.0-dev" }
+          echo "VERSION=$ver" >> $env:GITHUB_OUTPUT
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
+          modules: qtmultimedia qtshadertools qtwebview
+          cache: true
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Python packages
+        run: pip install -r python/requirements.txt
+
+      - name: Download WebView2 SDK
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          nuget install Microsoft.Web.WebView2 -OutputDirectory wv2_pkg
+          $wv2Dir = Get-ChildItem -Path wv2_pkg -Filter "Microsoft.Web.WebView2.*" -Directory | Select-Object -First 1
+          $destBase = "third_party/webview2/sdk/build/native"
+          New-Item -ItemType Directory -Path "$destBase/include" -Force | Out-Null
+          New-Item -ItemType Directory -Path "$destBase/x64" -Force | Out-Null
+          Copy-Item "$($wv2Dir.FullName)/build/native/include/*" "$destBase/include/" -Recurse -Force
+          Copy-Item "$($wv2Dir.FullName)/build/native/x64/*" "$destBase/x64/" -Recurse -Force
+
+      - name: Configure CMake
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          cmake -B build -G "Visual Studio 17 2022" -A x64 `
+            -DQt6_DIR="$env:Qt6_DIR" `
+            -DPython3_ROOT_DIR="$env:pythonLocation"
+
+      - name: Build
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          cmake --build build --config ${{ env.BUILD_TYPE }}
+
+      - name: Deploy Qt runtime
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = Get-ChildItem -Path "build" -Filter "CapScriptPro.exe" -Recurse | Select-Object -First 1
+          if (-not $exe) { Write-Error "CapScriptPro.exe not found"; exit 1 }
+          $windeployqt = Join-Path $env:QT_ROOT_DIR "bin\windeployqt.exe"
+          if (-not (Test-Path $windeployqt)) { Write-Error "windeployqt not found at $windeployqt"; exit 1 }
+          & $windeployqt $exe.FullName --no-translations --no-system-d3d-compiler --no-opengl-sw
+
+      - name: Stage build output
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = Get-ChildItem -Path "build" -Filter "CapScriptPro.exe" -Recurse | Select-Object -First 1
+          if (-not $exe) { Write-Error "CapScriptPro.exe not found"; exit 1 }
+          $buildDir = $exe.DirectoryName
+          New-Item -ItemType Directory -Path "staging" -Force | Out-Null
+          Copy-Item -Path "$buildDir\*" -Destination "staging\" -Recurse -Force
+          Write-Host "Staged files:"; Get-ChildItem -Recurse "staging" | ForEach-Object { Write-Host $_.FullName }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CapScriptPro-Windows-x64-${{ steps.version.outputs.VERSION }}
+          path: staging/
+
+  release:
+    needs: [build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Extract version
+        id: version
+        run: |
+          TAG="${{ github.ref_name }}"
+          echo "VERSION=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: CapScriptPro-Windows-x64-${{ steps.version.outputs.VERSION }}
+          path: release-contents
+
+      - name: Create release zip
+        run: |
+          cd release-contents
+          zip -r "../CapScriptPro-Windows-x64-${{ steps.version.outputs.VERSION }}.zip" .
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          files: CapScriptPro-Windows-x64-${{ steps.version.outputs.VERSION }}.zip

@@ -1,0 +1,33 @@
+<RCC version="1.0">
+    <qresource prefix="/">
+        <file>icons/app_icon.ico</file>
+        <file>icons/arrow-down.svg</file>
+        <file>icons/arrow-up.svg</file>
+        <file>icons/browse.svg</file>
+        <file>icons/checkbox-checked.svg</file>
+        <file>icons/checkbox-indeterminate.svg</file>
+        <file>icons/checkbox-unchecked.svg</file>
+        <file>icons/check-white.svg</file>
+        <file>icons/close.svg</file>
+        <file>icons/cute2.svg</file>
+        <file>icons/donate.svg</file>
+        <file>icons/export.svg</file>
+        <file>icons/feedback.svg</file>
+        <file>icons/github.svg</file>
+        <file>icons/heart-pink.svg</file>
+        <file>icons/heart.svg</file>
+        <file>icons/hide.svg</file>
+        <file>icons/import.svg</file>
+        <file>icons/maximize.svg</file>
+        <file>icons/minimize.svg</file>
+        <file>icons/paste.svg</file>
+        <file>icons/radio-checked.svg</file>
+        <file>icons/radio-unchecked.svg</file>
+        <file>icons/show.svg</file>
+        <file>icons/tooltip.svg</file>
+        <file>icons/app_icon_updater.ico</file>
+        <file>fonts/Akrobat-Black.ttf</file>
+        <file>icons/app_icon.png</file>
+        <file>qml/YouTubePlayer.qml</file>
+    </qresource>
+</RCC>
