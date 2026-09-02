@@ -12,6 +12,8 @@
 
 #ifdef CAPSCRIPT_WEBVIEW2
 #include <Windows.h>
+#include <unknwn.h>
+#include <objbase.h>
 #include <WebView2.h>
 
 namespace {

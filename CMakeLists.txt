@@ -52,24 +52,17 @@ endif()
 
 
 
-set(CAPSCRIPT_WEBVIEW_BACKEND_AVAILABLE OFF)
-if(QT_FEATURE_webview_webview2_plugin OR
-    QT_FEATURE_webview_winrt_plugin OR
-   CAPSCRIPT_WEBVIEW2_AVAILABLE)
-    set(CAPSCRIPT_WEBVIEW_BACKEND_AVAILABLE ON)
-endif()
-
 if(Qt6WebView_FOUND)
     message(STATUS "Qt6 WebView found")
 endif()
 
-if(CAPSCRIPT_WEBVIEW_BACKEND_AVAILABLE)
-    message(STATUS "WebView2 backend available")
+set(CAPSCRIPT_QT_WEBVIEW_AVAILABLE OFF)
+if(Qt6WebView_FOUND AND Qt6QuickWidgets_FOUND AND Qt6WebViewQuick_FOUND)
+    set(CAPSCRIPT_QT_WEBVIEW_AVAILABLE ON)
     add_compile_definitions(CAPSCRIPT_WEBVIEW)
-    message(STATUS "CAPSCRIPT_WEBVIEW enabled")
+    message(STATUS "Qt Quick WebView module available: CAPSCRIPT_WEBVIEW enabled")
 else()
-    message(STATUS "WebView2 backend NOT available")
-    message(STATUS "CAPSCRIPT_WEBVIEW disabled (browser fallback)")
+    message(STATUS "Qt Quick WebView module NOT available: CAPSCRIPT_WEBVIEW disabled")
 endif()
 
 
@@ -292,25 +285,27 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 
 
 
-if(WIN32 AND Qt6WebView_FOUND AND Qt6QuickWidgets_FOUND AND Qt6WebViewQuick_FOUND)
-
+if(WIN32)
     get_filename_component(_qt_prefix "${Qt6_DIR}/../../.." ABSOLUTE)
     set(_qt_bin_dir "${_qt_prefix}/bin")
     set(_qml_import_path "${_qt_prefix}/qml")
-
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${_qml_import_path}/QtWebView"
-            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/qml/QtWebView"
-        COMMENT "Copying QtWebView QML module"
-    )
-
 
     find_program(WINDEPLOYQT_EXECUTABLE windeployqt PATHS "${_qt_bin_dir}")
     if(WINDEPLOYQT_EXECUTABLE)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND "${WINDEPLOYQT_EXECUTABLE}" --no-translations --qmldir "${CMAKE_CURRENT_SOURCE_DIR}/assets/qml" "$<TARGET_FILE:${PROJECT_NAME}>"
-            COMMENT "Running windeployqt to copy required Qt plugins..."
+            COMMENT "Running windeployqt to copy required Qt DLLs and plugins..."
+        )
+    else()
+        message(WARNING "windeployqt not found in ${_qt_bin_dir} - Qt DLLs will NOT be deployed to the output directory.")
+    endif()
+
+    if(Qt6WebView_FOUND AND Qt6QuickWidgets_FOUND AND Qt6WebViewQuick_FOUND)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${_qml_import_path}/QtWebView"
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/qml/QtWebView"
+            COMMENT "Copying QtWebView QML module"
         )
     endif()
 endif()

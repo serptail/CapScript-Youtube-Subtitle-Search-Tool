@@ -10,7 +10,7 @@ build/
 .venv/
 third_party/webview2/
 third_party/webview2_disabled/
-
+/wv2_pkg/
 *.user
 *.suo
 *.sln

@@ -35,8 +35,8 @@ def install_requirements(site_packages, req_file, marker_name, marker_scope):
         except OSError:
             pass
 
-    print(f"Installing requirements from {req_file} into {site_packages}...")
-    subprocess.check_call(
+    print(f"Installing requirements from {req_file} into {site_packages}...", flush=True)
+    result = subprocess.run(
         [
             sys.executable,
             "-m",
@@ -44,12 +44,24 @@ def install_requirements(site_packages, req_file, marker_name, marker_scope):
             "install",
             "--upgrade",
             "--prefer-binary",
+            "--ignore-installed",
             "-r",
             req_file,
             "--target",
             site_packages,
-        ]
+        ],
+        capture_output=True,
+        text=True,
     )
+
+    if result.returncode != 0:
+        if result.stdout:
+            print(result.stdout, flush=True)
+        if result.stderr:
+            print(result.stderr, file=sys.stderr, flush=True)
+        raise subprocess.CalledProcessError(result.returncode, result.args)
+    else:
+        print("Requirements installed successfully.", flush=True)
 
     with open(marker_file, "w", encoding="utf-8") as f:
         f.write(marker_payload)
